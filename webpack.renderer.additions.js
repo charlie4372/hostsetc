@@ -3,6 +3,7 @@ const path = require ('path');
 module.exports = function(config) {
   // set the aliases
   config.resolve.alias['@renderer'] = path.resolve(__dirname, 'src', 'renderer');
+  config.resolve.alias['@common'] = path.resolve(__dirname, 'src', 'common');
   // TODO Add production vue build
   config.resolve.alias['vue$'] = path.resolve(__dirname, 'node_modules/vue/dist/vue.runtime.common.dev.js');
 
@@ -21,7 +22,7 @@ module.exports = function(config) {
   //   }
   // });
 
-  console.log(JSON.stringify(config, null, 4))
+  // console.log(JSON.stringify(config.resolve, null, 4))
 
   return config;
 }
