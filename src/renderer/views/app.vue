@@ -15,7 +15,9 @@
           permanent
         >
           <v-list dense>
-            <v-list-item link>
+            <v-list-item link
+              @click="onHostEntryClick(hosts.main)"
+            >
               <v-list-item-action>
                 <v-icon>mdi-home</v-icon>
               </v-list-item-action>
@@ -31,7 +33,9 @@
               <v-list-item
                 v-for="(entry, index) in category.entries"
                 :key="index"
-                link>
+                link
+                @click="onHostEntryClick(entry)"
+              >
                 <v-list-item-action>
                   <v-icon>mdi-contact-mail</v-icon>
                 </v-list-item-action>
@@ -52,29 +56,23 @@
             class="d-flex w-100"
           >
             <v-checkbox
-              class="mt-0"
               v-model="hostsRecord.enabled"
-              dense
               hide-details="true"
             >
             </v-checkbox>
             <v-text-field
               v-model="hostsRecord.value"
-              dense
               hide-details="true"
               clearable
             ></v-text-field>
           </div>
           <div class="d-flex w-100">
             <v-checkbox
-              class="mt-0"
-              dense
               hide-details="true"
             >
             </v-checkbox>
             <v-text-field
               placeholder="New record"
-              dense
               hide-details="true"
               clearable
             ></v-text-field>
@@ -105,7 +103,9 @@
     private hosts: Hosts = {
       main: {
         records: [
-          { enabled: true, value: '127.0.0.1  localhost' }
+          { enabled: true, value: '127.0.0.1  localhost' },
+          { enabled: true, value: '127.0.0.1  www.hosts-editor.com.au' },
+          { enabled: true, value: '127.0.0.1  api.hosts-editor.com.au' }
         ]
       },
       categories: [
@@ -115,13 +115,15 @@
             {
               name: 'VM1',
               records: [
-                { enabled: true, value: '192.168.50.1  staging.hosts-editor.com.au' }
+                { enabled: true, value: '10.0.51.1  www.hosts-editor.com.au' },
+                { enabled: true, value: '10.0.51.2  api.hosts-editor.com.au' }
               ]
             },
             {
               name: 'VM2',
               records: [
-                { enabled: true, value: '192.168.50.2  staging.hosts-editor.com.au' }
+                { enabled: true, value: '10.0.52.1  www.hosts-editor.com.au' },
+                { enabled: true, value: '10.0.52.2  api.hosts-editor.com.au' }
               ]
             }
           ]
@@ -132,13 +134,15 @@
             {
               name: 'Australia East',
               records: [
-                { enabled: true, value: '192.168.50.1  staging.hosts-editor.com.au' }
+                { enabled: true, value: '192.168.51.1  www.hosts-editor.com.au' },
+                { enabled: true, value: '192.168.51.2  api.hosts-editor.com.au' }
               ]
             },
             {
               name: 'US West',
               records: [
-                { enabled: true, value: '192.168.50.2  staging.hosts-editor.com.au' }
+                { enabled: true, value: '192.168.52.1  www.hosts-editor.com.au' },
+                { enabled: true, value: '192.168.52.2  api.hosts-editor.com.au' }
               ]
             }
           ]
@@ -164,6 +168,10 @@
     }
 
     private currentEntry: HostsEntry = this.hosts.main;
+
+    private onHostEntryClick(newEntry: HostsEntry): void {
+      this.currentEntry = newEntry;
+    }
   }
 </script>
 
