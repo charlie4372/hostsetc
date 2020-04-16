@@ -50,33 +50,11 @@
           class="fill-height align-start justify-start flex-column"
           fluid
         >
-          <div
-            v-for="(hostsRecord, index) in currentEntry.records"
-            :key="index"
-            class="d-flex w-100"
-          >
-            <v-checkbox
-              v-model="hostsRecord.enabled"
-              hide-details="true"
-            >
-            </v-checkbox>
-            <v-text-field
-              v-model="hostsRecord.value"
-              hide-details="true"
-              clearable
-            ></v-text-field>
-          </div>
-          <div class="d-flex w-100">
-            <v-checkbox
-              hide-details="true"
-            >
-            </v-checkbox>
-            <v-text-field
-              placeholder="New record"
-              hide-details="true"
-              clearable
-            ></v-text-field>
-          </div>
+          <v-textarea
+            class="w-100"
+            :auto-grow="true"
+            v-model="currentEntry.value"
+            ></v-textarea>
         </v-container>
       </div>
     </v-content>
@@ -92,21 +70,19 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {Hosts, HostsEntry} from '@common/hosts';
+  import {Hosts, HostsEntry, HostsRecord} from '@common/hosts';
+  import HostsRecordInput from "@renderer/components/HostsRecordInput.vue";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
+      HostsRecordInput
     }
   })
   export default class App extends Vue {
     private hosts: Hosts = {
       main: {
-        records: [
-          { enabled: true, value: '127.0.0.1  localhost' },
-          { enabled: true, value: '127.0.0.1  www.hosts-editor.com.au' },
-          { enabled: true, value: '127.0.0.1  api.hosts-editor.com.au' }
-        ]
+        value: '127.0.0.1  localhost\r\n127.0.0.1  www.hosts-editor.com.au\r\n127.0.0.1  api.hosts-editor.com.au'
       },
       categories: [
         {
@@ -114,17 +90,11 @@
           entries: [
             {
               name: 'VM1',
-              records: [
-                { enabled: true, value: '10.0.51.1  www.hosts-editor.com.au' },
-                { enabled: true, value: '10.0.51.2  api.hosts-editor.com.au' }
-              ]
+              value: '10.0.51.1  www.hosts-editor.com.au\r\n10.0.51.2  api.hosts-editor.com.au'
             },
             {
               name: 'VM2',
-              records: [
-                { enabled: true, value: '10.0.52.1  www.hosts-editor.com.au' },
-                { enabled: true, value: '10.0.52.2  api.hosts-editor.com.au' }
-              ]
+              value: '10.0.52.1  www.hosts-editor.com.au\r\n10.0.52.2  api.hosts-editor.com.au'
             }
           ]
         },
@@ -133,17 +103,11 @@
           entries: [
             {
               name: 'Australia East',
-              records: [
-                { enabled: true, value: '192.168.51.1  www.hosts-editor.com.au' },
-                { enabled: true, value: '192.168.51.2  api.hosts-editor.com.au' }
-              ]
+              value: '192.168.51.1  www.hosts-editor.com.au\r\n192.168.51.2  api.hosts-editor.com.au'
             },
             {
               name: 'US West',
-              records: [
-                { enabled: true, value: '192.168.52.1  www.hosts-editor.com.au' },
-                { enabled: true, value: '192.168.52.2  api.hosts-editor.com.au' }
-              ]
+              value: '192.168.52.1  www.hosts-editor.com.au\r\n192.168.52.2  api.hosts-editor.com.au'
             }
           ]
         },
@@ -152,15 +116,11 @@
           entries: [
             {
               name: 'Australia East',
-              records: [
-                { enabled: true, value: '192.168.50.1  staging.hosts-editor.com.au' }
-              ]
+              value: '192.168.50.1  staging.hosts-editor.com.au'
             },
             {
               name: 'US West',
-              records: [
-                { enabled: true, value: '192.168.50.2  staging.hosts-editor.com.au' }
-              ]
+              value: '192.168.50.2  staging.hosts-editor.com.au'
             }
           ]
         }
@@ -172,15 +132,12 @@
     private onHostEntryClick(newEntry: HostsEntry): void {
       this.currentEntry = newEntry;
     }
+
+    private onAddHostsRecord(newRecord: HostsRecord): void {
+      this.currentEntry.records.push(newRecord)
+    }
   }
 </script>
 
 <style scoped lang="scss">
-  .h-100 {
-    height: 100%;
-  }
-
-  .w-100 {
-    width: 100%;
-  }
 </style>

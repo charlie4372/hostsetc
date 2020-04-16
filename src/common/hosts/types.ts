@@ -5,7 +5,8 @@ export interface Hosts {
 
 export interface HostsEntry {
   name?: string;
-  records: HostsRecord[];
+  value: string;
+  // records: HostsRecord[];
 }
 
 export interface HostsRecord {
