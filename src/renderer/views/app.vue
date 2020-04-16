@@ -15,46 +15,50 @@
           permanent
         >
           <v-list dense>
-            <v-list-item link
+            <hosts-entry-drawer-item
+              name="Main"
+              :value="hosts.main"
               @click="onHostEntryClick(hosts.main)"
             >
-              <v-list-item-action>
-                <v-icon>mdi-home</v-icon>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>Main</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
+            </hosts-entry-drawer-item>
             <div
               v-for="(category, index) in hosts.categories"
               :key="index"
               >
-              <v-subheader>{{category.name}}</v-subheader>
-              <v-list-item
+              <hosts-category-drawer-item
+                :value="category"
+                >
+              </hosts-category-drawer-item>
+              <hosts-entry-drawer-item
                 v-for="(entry, index) in category.entries"
                 :key="index"
-                link
+                :value="entry"
                 @click="onHostEntryClick(entry)"
               >
-                <v-list-item-action>
-                  <v-icon>mdi-contact-mail</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title>{{entry.name}}</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
+              </hosts-entry-drawer-item>
             </div>
           </v-list>
+
+          <template v-slot:append>
+            <div class="pa-2 psy-2">
+              <div>
+                <v-btn block>Reload</v-btn>
+              </div>
+              <div>
+                <v-btn block>Save</v-btn>
+              </div>
+            </div>
+          </template>
         </v-navigation-drawer>
         <v-container
           class="fill-height align-start justify-start flex-column"
           fluid
         >
-          <v-textarea
-            class="w-100"
-            :auto-grow="true"
-            v-model="currentEntry.value"
-            ></v-textarea>
+          <host-entry-editor
+            v-model="currentEntry"
+            :show-name="showNameOnHostedEditor"
+            >
+          </host-entry-editor>
         </v-container>
       </div>
     </v-content>
@@ -71,12 +75,16 @@
   import Vue from 'vue';
   import Component from 'vue-class-component';
   import {Hosts, HostsEntry, HostsRecord} from '@common/hosts';
-  import HostsRecordInput from "@renderer/components/HostsRecordInput.vue";
+  import HostEntryEditor from "@renderer/components/editors/HostEntryEditor.vue";
+  import HostsEntryDrawerItem from "@renderer/components/navigation-drawer/HostsEntryDrawerItem.vue";
+  import HostsCategoryDrawerItem from "@renderer/components/navigation-drawer/HostsCategoryDrawerItem.vue";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
-      HostsRecordInput
+      HostEntryEditor,
+      HostsEntryDrawerItem,
+      HostsCategoryDrawerItem
     }
   })
   export default class App extends Vue {
@@ -129,8 +137,12 @@
 
     private currentEntry: HostsEntry = this.hosts.main;
 
+    private showNameOnHostedEditor = false
+
     private onHostEntryClick(newEntry: HostsEntry): void {
       this.currentEntry = newEntry;
+      // TODO work out when the Main item is selected
+      this.showNameOnHostedEditor = true;
     }
 
     private onAddHostsRecord(newRecord: HostsRecord): void {

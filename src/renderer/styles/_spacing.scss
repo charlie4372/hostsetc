@@ -1,7 +1,27 @@
+@import '~vuetify/src/styles/settings/variables';
+
 .w-100 {
   width: 100%;
 }
 
 .h-100 {
   height: 100%;
+}
+
+@each $index, $size in $spacers {
+  .psx-#{$index} > * {
+    padding-right: #{$size} !important;
+  }
+
+  .psx-#{$index} > *:last-child {
+    padding-right: 0 !important;
+  }
+
+  .psy-#{$index} > * {
+    padding-bottom: #{$size} !important;
+  }
+
+  .psy-#{$index} > *:last-child {
+    padding-bottom: 0 !important;
+  }
 }
