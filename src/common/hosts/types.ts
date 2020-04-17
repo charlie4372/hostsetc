@@ -1,6 +1,7 @@
 export interface Hosts {
   main: HostsEntry;
   categories: HostsCategory[];
+  readonly: boolean;
 }
 
 export interface HostsEntry {

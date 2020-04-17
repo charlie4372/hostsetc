@@ -42,7 +42,9 @@
           <template v-slot:append>
             <div class="pa-2 psy-2">
               <div>
-                <v-btn block>Reload</v-btn>
+                <v-btn block
+                       @click="onReload"
+                >Reload</v-btn>
               </div>
               <div>
                 <v-btn block>Save</v-btn>
@@ -55,7 +57,8 @@
           fluid
         >
           <host-entry-editor
-            v-model="currentEntry"
+            :value="currentEntry"
+            @input="onUpdateEntry"
             :show-name="showNameOnHostedEditor"
             >
           </host-entry-editor>
@@ -74,10 +77,11 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {Hosts, HostsEntry, HostsRecord} from '@common/hosts';
+  import {Hosts, HostsEntry} from '@common/hosts';
   import HostEntryEditor from "@renderer/components/editors/HostEntryEditor.vue";
   import HostsEntryDrawerItem from "@renderer/components/navigation-drawer/HostsEntryDrawerItem.vue";
   import HostsCategoryDrawerItem from "@renderer/components/navigation-drawer/HostsCategoryDrawerItem.vue";
+  import {HostsFile} from "@common/hosts-file/HostsFile";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -88,7 +92,8 @@
     }
   })
   export default class App extends Vue {
-    private hosts: Hosts = {
+    private sampleData: Hosts = {
+      readonly: false,
       main: {
         value: '127.0.0.1  localhost\r\n127.0.0.1  www.hosts-editor.com.au\r\n127.0.0.1  api.hosts-editor.com.au'
       },
@@ -135,9 +140,20 @@
       ]
     }
 
-    private currentEntry: HostsEntry = this.hosts.main;
+    private currentEntry: HostsEntry;
+    private hosts: Hosts;
 
-    private showNameOnHostedEditor = false
+
+    private hostsFile: HostsFile = new HostsFile();
+
+    private showNameOnHostedEditor: boolean = false
+
+    public constructor() {
+      super();
+
+      this.hosts = this.sampleData;
+      this.currentEntry = this.hosts.main;
+    }
 
     private onHostEntryClick(newEntry: HostsEntry): void {
       this.currentEntry = newEntry;
@@ -145,8 +161,16 @@
       this.showNameOnHostedEditor = true;
     }
 
-    private onAddHostsRecord(newRecord: HostsRecord): void {
-      this.currentEntry.records.push(newRecord)
+    private onReload(): void {
+      this.hostsFile.load();
+
+      this.hosts = this.hostsFile.hosts;
+      this.currentEntry = this.hosts.main;
+    }
+
+    private onUpdateEntry(entry: HostsEntry): void {
+      this.currentEntry.name = entry.name;
+      this.currentEntry.value = entry.value;
     }
   }
 </script>
