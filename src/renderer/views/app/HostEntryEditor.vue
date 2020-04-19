@@ -6,8 +6,7 @@
         v-show="showName"
         label="Name"
         required
-        :value="internalName"
-        @input="internalName = $event"
+        v-model="internalName"
         :readonly="readonly"
       >
       </v-text-field>
@@ -30,7 +29,7 @@
         Revert
       </v-btn>
       <v-btn
-        @click="onSave"
+        @click="onUpdate"
       >Save</v-btn>
     </div>
   </section>
@@ -51,14 +50,17 @@
     }
   })
   export default class HostEntryEditor extends Vue {
-    @Prop({type: Object, required: true})
-    public readonly value!: HostsEntry;
+    @Prop({type: Object})
+    public readonly entry!: HostsEntry | null;
 
     @Prop({type: Boolean, default: true})
     public readonly showName!: boolean;
 
     @Prop({type: Boolean})
-    public readonly readonly !: boolean
+    public readonly readonly!: boolean
+
+    @Prop({type: Boolean})
+    public readonly adding!: Boolean;
 
     private internalName: string | null = null;
     private internalTextHtml: string = '';
@@ -68,19 +70,32 @@
     }
 
     public created(): void {
-      this.setInternalValues(this.value);
+      this.setInternalValues(this.entry || null);
     }
 
-    @Watch('value')
-    private onValueChange(newValue: HostsEntry): void {
+    @Watch('entry')
+    private onEntryChange(newValue: HostsEntry | null): void {
       this.setInternalValues(newValue);
     }
 
-    private onRevert(): void {
-      this.setInternalValues(this.value);
+    @Watch('adding')
+    private onAddingChange(newValue: boolean): void {
+      if (newValue) {
+        this.setInternalValues(null);
+      }
     }
 
-    private setInternalValues(entry: HostsEntry): void {
+    private onRevert(): void {
+      this.setInternalValues(this.entry);
+    }
+
+    private setInternalValues(entry: HostsEntry | null): void {
+      if (entry === null) {
+        this.internalName = '';
+        this.internalTextHtml = '';
+        return;
+      }
+
       this.internalName = entry.name || null;
       this.internalTextHtml = htmlEncode.encodeTextFileToHtml(entry.value);
       // internalTextHtml is never updated after the initial creation.
@@ -91,9 +106,9 @@
       }
     }
 
-    private onSave(): void {
-      this.$emit('input', {
-        ...this.value,
+    private onUpdate(): void {
+      this.$emit('updated', {
+        ...this.entry,
         name: this.internalName || undefined,
         value: htmlEncode.decodeHtmlToTextFile(this.$refs.editableDiv.innerHTML)
       })

@@ -11,89 +11,37 @@
 
     <v-content>
       <div class="d-flex h-100">
-        <v-navigation-drawer
-          permanent
-        >
-          <v-list dense>
-            <hosts-entry-drawer-item
-              name="Main"
-              :value="hosts.main"
-              @click="onHostEntryClick(hosts.main)"
-            >
-            </hosts-entry-drawer-item>
-            <v-list-item
-              link
-            >
-              <v-list-item-action>
-                <v-icon>mdi-contact-mail</v-icon>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title
-                  class="text--secondary" >New entry</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-
-            <div
-              v-for="(category, index) in hosts.categories"
-              :key="index"
-              >
-              <hosts-category-drawer-item
-                :value="category"
-                >
-              </hosts-category-drawer-item>
-              <hosts-entry-drawer-item
-                v-for="(entry, index) in category.entries"
-                :key="index"
-                :value="entry"
-                @click="onHostEntryClick(entry)"
-              >
-              </hosts-entry-drawer-item>
-              <v-list-item
-                link
-              >
-                <v-list-item-action>
-                  <v-icon>mdi-contact-mail</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title
-                    class="text--secondary">New entry</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-            </div>
-            <v-list-item
-              link
-            >
-              <v-list-item-content>
-                <v-list-item-title
-                  class="text--secondary">New category</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-
-          <template v-slot:append>
-            <div class="pa-2 psy-2">
-              <div>
-                <v-btn block
-                       @click="onReload"
-                >Reload</v-btn>
-              </div>
-              <div>
-                <v-btn block>Save</v-btn>
-              </div>
-            </div>
-          </template>
-        </v-navigation-drawer>
+        <app-navigation-drawer
+          :hosts="hosts"
+          @select-entry="selectEntry($event)"
+          @add-entry="addEntry($event)"
+        ></app-navigation-drawer>
         <v-container
           class="fill-height align-start justify-start flex-column"
           fluid
         >
           <host-entry-editor
-            :value="currentEntry"
-            @input="onUpdateEntry"
+            v-if="mode === 'view-entry'"
+            :entry="currentEntry"
+            @updated="onUpdateEntry"
             :show-name="showNameOnHostedEditor"
             :readonly="hosts.readonly"
             >
           </host-entry-editor>
+
+          <host-entry-editor
+            v-else-if="mode === 'add-entry'"
+            :adding="true"
+            @updated="onAddEntry"
+            :show-name="true"
+          >
+          </host-entry-editor>
+
+          <host-category-editor
+            v-else-if="mode === 'view-category'"
+            :category="currentCategory"
+            @updated="onUpdateCategory"
+            ></host-category-editor>
         </v-container>
       </div>
     </v-content>
@@ -109,18 +57,20 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {Hosts, HostsEntry} from '@common/hosts';
-  import HostEntryEditor from "@renderer/components/editors/HostEntryEditor.vue";
-  import HostsEntryDrawerItem from "@renderer/components/navigation-drawer/HostsEntryDrawerItem.vue";
-  import HostsCategoryDrawerItem from "@renderer/components/navigation-drawer/HostsCategoryDrawerItem.vue";
+  import {Hosts, HostsCategory, HostsEntry} from '@common/hosts';
+  import HostEntryEditor from "@renderer/views/app/HostEntryEditor.vue";
   import {HostsFile} from "@common/hosts-file/HostsFile";
+  import HostCategoryEditor from "@renderer/views/app/HostCategoryEditor.vue";
+  import AppNavigationDrawer from "@renderer/views/app/AppNavigationDrawer.vue";
+
+  type viewMode = 'view-entry'|'view-category'|'add-entry'|'add-category';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
+      HostCategoryEditor,
       HostEntryEditor,
-      HostsEntryDrawerItem,
-      HostsCategoryDrawerItem
+      AppNavigationDrawer
     }
   })
   export default class App extends Vue {
@@ -172,9 +122,10 @@
       ]
     }
 
-    private currentEntry: HostsEntry;
-    private hosts: Hosts;
-
+    private mode: viewMode = "view-entry";
+    private currentCategory: HostsCategory | null = null;
+    private currentEntry: HostsEntry | null = null;
+    private hosts: Hosts = this.sampleData;
 
     private hostsFile: HostsFile = new HostsFile();
 
@@ -183,26 +134,62 @@
     public constructor() {
       super();
 
-      this.hosts = this.sampleData;
-      this.currentEntry = this.hosts.main;
+      // The TS defaults kick in after the constructor.
+      // But if they're not there, then they don't register with vue.
+      this.$nextTick(() => {
+        this.hosts = this.sampleData;
+        this.selectEntry(this.hosts.main);
+      });
     }
 
-    private onHostEntryClick(newEntry: HostsEntry): void {
-      this.currentEntry = newEntry;
-      // TODO work out when the Main item is selected
-      this.showNameOnHostedEditor = newEntry.name !== undefined;
+    private onHostEntryClick(entry: HostsEntry): void {
+      this.selectEntry(entry);
+    }
+
+    private onHostCategoryClick(category: HostsCategory): void {
+      this.setCurrentCategory(category);
     }
 
     private onReload(): void {
       this.hostsFile.load();
 
       this.hosts = this.hostsFile.hosts;
-      this.currentEntry = this.hosts.main;
+      this.selectEntry(this.hosts.main);
     }
 
     private onUpdateEntry(entry: HostsEntry): void {
-      this.currentEntry.name = entry.name;
-      this.currentEntry.value = entry.value;
+      if (this.currentEntry != null) {
+        this.currentEntry.name = entry.name;
+        this.currentEntry.value = entry.value;
+      }
+    }
+
+    private setCurrentCategory(category: HostsCategory): void {
+      this.currentCategory = category;
+      this.currentEntry = null;
+      this.mode = 'view-category';
+    }
+
+    private selectEntry(entry: HostsEntry): void {
+      this.mode = 'view-entry';
+      this.currentCategory = null;
+      this.currentEntry = entry;
+
+      // TODO work out when the Main item is selected
+      this.showNameOnHostedEditor = entry.name !== undefined;
+    }
+
+    private addEntry(category: HostsCategory): void {
+      this.currentEntry = null;
+      this.currentCategory = category;
+      this.mode = 'add-entry';
+    }
+
+    private onAddEntry(category: HostsCategory): void {
+    }
+
+    private onUpdateCategory(category: HostsCategory): void {
+
     }
   }
 </script>
