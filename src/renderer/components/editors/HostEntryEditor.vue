@@ -13,9 +13,9 @@
     </div>
     <div
       ref="editableDiv"
-      class="flex-grow-1"
+      class="flex-grow-1 host-entry-editor__text"
       contenteditable="true"
-      v-html="convertToHtml(internalText)"
+      v-html="internalTextHtml"
     >
     </div>
     <div>
@@ -36,6 +36,9 @@
   import Component from 'vue-class-component';
   import {HostsEntry} from "@common/hosts";
   import { Prop, Watch } from 'vue-property-decorator';
+  import { HtmlEncode} from "@common/html-encode";
+
+  const htmlEncode = new HtmlEncode();
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -50,7 +53,7 @@
     public readonly showName!: boolean;
 
     private internalName: string | null = null;
-    private internalText: string = '';
+    private internalTextHtml: string = '';
 
     readonly $refs!: {
       editableDiv: HTMLElement;
@@ -71,42 +74,27 @@
 
     private setInternalValues(entry: HostsEntry): void {
       this.internalName = entry.name || null;
-      this.internalText = entry.value;
+      this.internalTextHtml = htmlEncode.encodeTextFileToHtml(entry.value);
+      // internalTextHtml is never updated after the initial creation.
+      // Setting back to itself doesn't trigger reactive binding.
+      // So update it manually.
+      if (this.$refs.editableDiv) {
+        this.$refs.editableDiv.innerHTML = this.internalTextHtml
+      }
     }
 
     private onSave(): void {
       this.$emit('input', {
         ...this.value,
         name: this.internalName || undefined,
-        value: this.$refs.editableDiv.innerText
+        value: htmlEncode.decodeHtmlToTextFile(this.$refs.editableDiv.innerHTML)
       })
-    }
-
-    private convertToHtml(text: string): string {
-      const textWithStandardLineBreaks = text
-        .replace(/\r\n/g, '\n')
-        .replace(/\r/g, '\n');
-
-      const element = window
-        .document
-        .createElement('div')
-        .appendChild(document.createTextNode(textWithStandardLineBreaks));
-
-      const lines = (element.parentNode as any)
-        .innerHTML
-        .split('\n');
-
-      return lines
-        .map((line: string): string => {
-          return `<div>${line}</div>\n`
-        })
-        .reduce((accumulator: string, currentValue: string): string => {
-          return accumulator + currentValue
-        });
     }
   }
 </script>
 
 <style scoped lang="scss">
-
+  .host-entry-editor__text {
+    font-family: "Roboto Mono";
+  }
 </style>

@@ -4,6 +4,7 @@ module.exports = function(config) {
   // set the aliases
   config.resolve.alias['@renderer'] = path.resolve(__dirname, 'src', 'renderer');
   config.resolve.alias['@common'] = path.resolve(__dirname, 'src', 'common');
+  config.resolve.alias['@static'] = path.resolve(__dirname, 'static');
   // TODO Add production vue build
   config.resolve.alias['vue$'] = path.resolve(__dirname, 'node_modules/vue/dist/vue.runtime.common.dev.js');
 
