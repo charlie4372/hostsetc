@@ -21,6 +21,18 @@
               @click="onHostEntryClick(hosts.main)"
             >
             </hosts-entry-drawer-item>
+            <v-list-item
+              link
+            >
+              <v-list-item-action>
+                <v-icon>mdi-contact-mail</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title
+                  class="text--secondary" >New entry</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+
             <div
               v-for="(category, index) in hosts.categories"
               :key="index"
@@ -36,7 +48,26 @@
                 @click="onHostEntryClick(entry)"
               >
               </hosts-entry-drawer-item>
+              <v-list-item
+                link
+              >
+                <v-list-item-action>
+                  <v-icon>mdi-contact-mail</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title
+                    class="text--secondary">New entry</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
             </div>
+            <v-list-item
+              link
+            >
+              <v-list-item-content>
+                <v-list-item-title
+                  class="text--secondary">New category</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
           </v-list>
 
           <template v-slot:append>
@@ -159,7 +190,7 @@
     private onHostEntryClick(newEntry: HostsEntry): void {
       this.currentEntry = newEntry;
       // TODO work out when the Main item is selected
-      this.showNameOnHostedEditor = true;
+      this.showNameOnHostedEditor = newEntry.name !== undefined;
     }
 
     private onReload(): void {

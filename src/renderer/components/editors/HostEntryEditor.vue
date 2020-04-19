@@ -21,6 +21,10 @@
     </div>
     <div>
       <v-btn
+      >
+        Delete
+      </v-btn>
+      <v-btn
         @click="onRevert"
       >
         Revert
