@@ -8,13 +8,14 @@
         required
         :value="internalName"
         @input="internalName = $event"
+        :readonly="readonly"
       >
       </v-text-field>
     </div>
     <div
       ref="editableDiv"
       class="flex-grow-1 host-entry-editor__text"
-      contenteditable="true"
+      :contenteditable="readonly ? 'false' : 'true'"
       v-html="internalTextHtml"
     >
     </div>
@@ -51,6 +52,9 @@
 
     @Prop({type: Boolean, default: true})
     public readonly showName!: boolean;
+
+    @Prop({type: Boolean})
+    public readonly readonly !: boolean
 
     private internalName: string | null = null;
     private internalTextHtml: string = '';

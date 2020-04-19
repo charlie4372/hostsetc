@@ -60,6 +60,7 @@
             :value="currentEntry"
             @input="onUpdateEntry"
             :show-name="showNameOnHostedEditor"
+            :readonly="hosts.readonly"
             >
           </host-entry-editor>
         </v-container>
