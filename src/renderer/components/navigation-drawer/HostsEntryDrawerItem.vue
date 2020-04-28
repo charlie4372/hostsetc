@@ -4,11 +4,17 @@
     @click="$emit('click', entry)"
   >
     <v-list-item-action>
-      <v-icon>mdi-contact-mail</v-icon>
+      <v-icon v-show="entry.active">
+        mdi-check
+      </v-icon>
     </v-list-item-action>
     <v-list-item-content>
-      <v-list-item-title v-if="name" >{{name}}</v-list-item-title>
-      <v-list-item-title v-else >{{entry.name}}</v-list-item-title>
+      <v-list-item-title v-if="name">
+        {{ name }}
+      </v-list-item-title>
+      <v-list-item-title v-else>
+        {{ entry.name }}
+      </v-list-item-title>
     </v-list-item-content>
   </v-list-item>
 </template>

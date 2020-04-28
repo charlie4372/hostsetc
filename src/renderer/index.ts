@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import Vue, { VNode } from 'vue'
 import { vuetifyPlugin, vuetify } from '@renderer/plugins/vuetify';
 import '@mdi/font/css/materialdesignicons.min.css';
 
@@ -10,5 +10,7 @@ Vue.use(vuetifyPlugin);
 
 new Vue({
   vuetify,
-  render: (h) => h(App)
+
+  // render?(createElement: CreateElement, hack: RenderContext<Props>): VNode;
+  render: (h): VNode => h(App)
 }).$mount('#app');

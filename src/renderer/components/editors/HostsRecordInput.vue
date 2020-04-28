@@ -3,18 +3,17 @@
     class="d-flex w-100"
   >
     <v-checkbox
-      :input-value="value.enabled"
+      :input-value="value.active"
+      :hide-details="true"
       @input="onEnableUpdated"
-      hide-details="true"
-    >
-    </v-checkbox>
+    />
     <v-text-field
       :value="value.value"
-      @input="onValueUpdated"
       :placeholder="placeholder"
-      hide-details="true"
+      :hide-details="true"
       clearable
-    ></v-text-field>
+      @input="onValueUpdated"
+    />
   </section>
 </template>
 
@@ -22,6 +21,7 @@
   import Vue from 'vue';
   import Component from 'vue-class-component';
   import { Prop } from 'vue-property-decorator';
+  import {HostsEntry} from "@common/hosts";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -33,19 +33,19 @@
       type: Object,
       default: () => ({ enabled: true, value: '' })
     })
-    public readonly value!: HostsRecordInput
+    public readonly value!: HostsEntry
 
     @Prop({ type: String })
-    private readonly placeholder?: string;
+    protected readonly placeholder?: string;
 
-    private onEnableUpdated(newValue: boolean): void {
+    protected onEnableUpdated(newValue: boolean): void {
       this.$emit('input', {
         ...this.value,
         enabled: newValue
       })
     }
 
-    private onValueUpdated(newValue: boolean): void {
+    protected onValueUpdated(newValue: boolean): void {
       this.$emit('input', {
         ...this.value,
         value: newValue

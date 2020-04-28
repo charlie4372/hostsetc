@@ -15,13 +15,14 @@ export class HtmlEncode {
   public decodeHtml(value: string): string {
     this.element.innerHTML = value;
 
-    const output = '';
-    for (let node of this.element.childNodes) {
-      if (node.nodeName === 'div') {
+    let output = '';
+    for (const node of this.element.childNodes) {
+      const element = node as HTMLElement;
+      if (element !== null && element.nodeName === 'div') {
         if (output.length === 0) {
-          output += node.innerText;
+          output += element.innerText;
         } else {
-          output += '\r\n' + node.innerText;
+          output += '\r\n' + element.innerText;
         }
       }
     }
@@ -31,8 +32,6 @@ export class HtmlEncode {
 
   public encodeTextFileToHtml(text: string): string {
     const textWithStandardLineBreaks = text
-      .replace(/\r\n/g, '\n')
-      .replace(/\r/g, '\n')
       .split('\n');
 
     return textWithStandardLineBreaks.map((line): string => {
@@ -50,14 +49,14 @@ export class HtmlEncode {
     this.element.innerHTML = value;
 
     let output = '';
-    for (let node of this.element.childNodes) {
+    for (const node of this.element.childNodes) {
       if (node.nodeName === 'DIV') {
         const innerText = (node as HTMLElement).innerText
 
         if (output.length === 0) {
           output += innerText;
         } else {
-          output += '\r\n' + innerText;
+          output += '\n' + innerText;
         }
       }
     }

@@ -1,6 +1,6 @@
 <template>
   <v-subheader>
-    {{category.name}}
+    {{ category.name }}
   </v-subheader>
 </template>
 

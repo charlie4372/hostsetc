@@ -1,36 +1,29 @@
 <template>
-  <section
-    class="w-100 h-100 d-flex flex-column">
+  <section class="w-100 h-100 d-flex flex-column">
     <div>
       <v-text-field
-        v-show="showName"
+        v-model="internalName"
         label="Name"
         required
-        v-model="internalName"
-        :readonly="readonly"
-      >
-      </v-text-field>
+        :readonly="readonly || nameReadonly"
+      />
     </div>
-    <div
-      ref="editableDiv"
+    <text-editor-input
+      ref="textEditor"
       class="flex-grow-1 host-entry-editor__text"
-      :contenteditable="readonly ? 'false' : 'true'"
-      v-html="internalTextHtml"
-    >
-    </div>
+      :readonly="readonly"
+      :content="content"
+    />
     <div>
-      <v-btn
-      >
+      <v-btn>
         Delete
       </v-btn>
-      <v-btn
-        @click="onRevert"
-      >
+      <v-btn @click="onRevert">
         Revert
       </v-btn>
-      <v-btn
-        @click="onUpdate"
-      >Save</v-btn>
+      <v-btn @click="onUpdate">
+        Save
+      </v-btn>
     </div>
   </section>
 </template>
@@ -40,33 +33,38 @@
   import Component from 'vue-class-component';
   import {HostsEntry} from "@common/hosts";
   import { Prop, Watch } from 'vue-property-decorator';
-  import { HtmlEncode} from "@common/html-encode";
-
-  const htmlEncode = new HtmlEncode();
+  import TextEditorInput from '@renderer/components/editors/TextEditorInput.vue';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
+      TextEditorInput
     }
   })
   export default class HostEntryEditor extends Vue {
+    readonly $refs!: {
+      textEditor: TextEditorInput;
+    }
+
     @Prop({type: Object})
     public readonly entry!: HostsEntry | null;
 
-    @Prop({type: Boolean, default: true})
-    public readonly showName!: boolean;
+    @Prop({type: Boolean})
+    public readonly nameReadonly!: boolean;
 
     @Prop({type: Boolean})
     public readonly readonly!: boolean
 
     @Prop({type: Boolean})
-    public readonly adding!: Boolean;
+    public readonly adding!: boolean;
 
-    private internalName: string | null = null;
-    private internalTextHtml: string = '';
+    protected internalName = '';
 
-    readonly $refs!: {
-      editableDiv: HTMLElement;
+    protected get content(): string | null {
+      if (this.entry === null) {
+        return null;
+      }
+      return this.entry.value;
     }
 
     public created(): void {
@@ -74,43 +72,36 @@
     }
 
     @Watch('entry')
-    private onEntryChange(newValue: HostsEntry | null): void {
+    protected onEntryChange(newValue: HostsEntry | null): void {
       this.setInternalValues(newValue);
     }
 
     @Watch('adding')
-    private onAddingChange(newValue: boolean): void {
+    protected onAddingChange(newValue: boolean): void {
       if (newValue) {
         this.setInternalValues(null);
       }
     }
 
-    private onRevert(): void {
+    protected onRevert(): void {
       this.setInternalValues(this.entry);
+      this.$refs.textEditor.revert();
     }
 
-    private setInternalValues(entry: HostsEntry | null): void {
+    protected setInternalValues(entry: HostsEntry | null): void {
       if (entry === null) {
         this.internalName = '';
-        this.internalTextHtml = '';
         return;
       }
 
-      this.internalName = entry.name || null;
-      this.internalTextHtml = htmlEncode.encodeTextFileToHtml(entry.value);
-      // internalTextHtml is never updated after the initial creation.
-      // Setting back to itself doesn't trigger reactive binding.
-      // So update it manually.
-      if (this.$refs.editableDiv) {
-        this.$refs.editableDiv.innerHTML = this.internalTextHtml
-      }
+      this.internalName = entry.name;
     }
 
-    private onUpdate(): void {
+    protected onUpdate(): void {
       this.$emit('updated', {
         ...this.entry,
         name: this.internalName || undefined,
-        value: htmlEncode.decodeHtmlToTextFile(this.$refs.editableDiv.innerHTML)
+        value: this.$refs.textEditor.getContent()
       })
     }
   }
@@ -118,6 +109,6 @@
 
 <style scoped lang="scss">
   .host-entry-editor__text {
-    font-family: "Roboto Mono";
+    font-family: "Roboto Mono", monospace;
   }
 </style>

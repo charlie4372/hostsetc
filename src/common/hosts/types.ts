@@ -5,9 +5,10 @@ export interface Hosts {
 }
 
 export interface HostsEntry {
-  name?: string;
+  name: string;
   value: string;
   // records: HostsRecord[];
+  active: boolean;
 }
 
 export interface HostsRecord {

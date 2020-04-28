@@ -17,9 +17,16 @@
     "baseUrl": "./src",
     "paths": {
       "@common/*": ["common/*"],
-      "@renderer/*": ["renderer/*"]
+      "@renderer/*": ["renderer/*"],
+      "@main/*": ["main/*"],
+      "~/*": ["*"]
     }
   },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+  ],
   "exclude": [
     "node_modules"
   ]

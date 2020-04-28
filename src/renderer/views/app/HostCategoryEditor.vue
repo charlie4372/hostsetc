@@ -1,29 +1,23 @@
 <template>
-  <section
-    class="w-100 h-100 d-flex flex-column">
+  <section class="w-100 h-100 d-flex flex-column">
     <div>
       <v-text-field
+        v-model="internalName"
         label="Name"
         required
-        v-model"internalName"
         :readonly="readonly"
-      >
-      </v-text-field>
+      />
     </div>
-    <div></div>
     <div>
-      <v-btn
-      >
+      <v-btn>
         Delete
       </v-btn>
-      <v-btn
-        @click="onRevert"
-      >
+      <v-btn @click="onRevert">
         Revert
       </v-btn>
-      <v-btn
-        @click="onUpdate"
-      >Update</v-btn>
+      <v-btn @click="onUpdate">
+        Update
+      </v-btn>
     </div>
   </section>
 </template>
@@ -54,14 +48,14 @@
       this.internalName = this.category.name;
     }
 
-    private onUpdate(): void {
+    protected onUpdate(): void {
       this.$emit('updated', {
         ...this.category,
         name: this.internalName
       });
     }
 
-    private onRevert(): void {
+    protected onRevert(): void {
       this.internalName = this.category.name;
     }
   }

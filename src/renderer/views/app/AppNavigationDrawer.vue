@@ -5,38 +5,34 @@
     <v-list dense>
       <hosts-entry-drawer-item
         name="Main"
-        :value="hosts.main"
-        @click="onEnrtyClick(hosts.main)"
-      >
-      </hosts-entry-drawer-item>
-      <v-list-item
-        link
-      >
+        :entry="hosts.main"
+        @click="onEntryClick(hosts.main)"
+      />
+      <v-list-item link>
         <v-list-item-action>
           <v-icon>mdi-contact-mail</v-icon>
         </v-list-item-action>
         <v-list-item-content>
-          <v-list-item-title
-            class="text--secondary" >New entry</v-list-item-title>
+          <v-list-item-title class="text--secondary">
+            New entry
+          </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
 
       <div
-        v-for="(category, index) in hosts.categories"
-        :key="index"
+        v-for="(category, categoryIndex) in hosts.categories"
+        :key="categoryIndex"
       >
         <hosts-category-drawer-item
           :category="category"
           @click="onCategoryClick(category)"
-        >
-        </hosts-category-drawer-item>
+        />
         <hosts-entry-drawer-item
-          v-for="(entry, index) in category.entries"
-          :key="index"
+          v-for="(entry, entryIndex) in category.entries"
+          :key="entryIndex"
           :entry="entry"
-          @click="onEnrtyClick(entry)"
-        >
-        </hosts-entry-drawer-item>
+          @click="onEntryClick(entry)"
+        />
         <v-list-item
           link
         >
@@ -47,7 +43,9 @@
             <v-list-item-title
               class="text--secondary"
               @click="onAddEntry(category)"
-            >New entry</v-list-item-title>
+            >
+              New entry
+            </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </div>
@@ -58,7 +56,9 @@
           <v-list-item-title
             class="text--secondary"
             @click="onAddCategory"
-          >New category</v-list-item-title>
+          >
+            New category
+          </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
     </v-list>
@@ -66,12 +66,17 @@
     <template v-slot:append>
       <div class="pa-2 psy-2">
         <div>
-          <v-btn block
-                 @click="$emit('reload')"
-          >Reload</v-btn>
+          <v-btn
+            block
+            @click="$emit('reload')"
+          >
+            Reload
+          </v-btn>
         </div>
         <div>
-          <v-btn block>Save</v-btn>
+          <v-btn block>
+            Save
+          </v-btn>
         </div>
       </div>
     </template>
@@ -97,19 +102,19 @@
     @Prop({ type: Object, required: true })
     public readonly hosts!: Hosts;
 
-    private onCategoryClick(category: HostsCategory): void {
+    protected onCategoryClick(category: HostsCategory): void {
       this.$emit('select-category', category);
     }
 
-    private onEnrtyClick(entry: HostsEntry): void {
+    protected onEntryClick(entry: HostsEntry): void {
       this.$emit('select-entry', entry);
     }
 
-    private onAddCategory(): void {
+    protected onAddCategory(): void {
       this.$emit('add-category');
     }
 
-    private onAddEntry(category: HostsCategory): void {
+    protected onAddEntry(category: HostsCategory): void {
       this.$emit('add-entry', category);
     }
   }

@@ -1,12 +1,9 @@
 import fs from 'fs';
-import {Hosts} from "@common/hosts";
+import {
+  Hosts,
+  convertHostsToFile, convertFileToHosts
+} from "@common/hosts";
 import process from 'process';
-
-const startOfCategory = /^####\+\+\+Category (?:<name>.*)[\s#]*$/
-const endOfCategory = /^ ####\-\-\-Category /
-
-const startOfEntry = /^####\+\+\+Entry (?:<name>.*)[\s#]*$/
-const endOfEntry = /^ ####\-\-\-Entry /
 
 export class HostsFile {
   private _hostsFilePaths: string[] = [
@@ -16,7 +13,7 @@ export class HostsFile {
 
   private _resolvedHostsFilePath: string | undefined;
 
-  private lineBreak: string = '\r\n';
+  private lineBreak = '\r\n';
 
   public hosts!: Hosts;
 
@@ -24,12 +21,14 @@ export class HostsFile {
     this.load();
   }
 
-  public load() {
+  public load(): void {
     const hostsPath = this.getHostsPath();
     if (hostsPath === null) {
       this.hosts = {
         main: {
-          value: '# The hosts file could not be found.'
+          name: 'Main',
+          value: '# The hosts file could not be found.',
+          active: false
         },
         categories: [],
         readonly: true
@@ -37,17 +36,9 @@ export class HostsFile {
       return;
     }
 
-    const lines = fs.readFileSync(hostsPath, 'utf-8');
+    const content = fs.readFileSync(hostsPath, 'utf-8');
 
-    const hosts = {
-      main: {
-        value: lines
-      },
-      categories: [],
-      readonly: false
-    }
-
-    this.hosts = hosts;
+    this.hosts = convertFileToHosts(content);
   }
 
   public Save(): void {
@@ -64,25 +55,9 @@ export class HostsFile {
 
     fs.copyFileSync(hostsPath, backupPath);
 
-    let content = this.trimTrailingLineBreaks(this.hosts.main.value) + this.lineBreak;
-
-    for (let category of this.hosts.categories) {
-      content += `####+++Category ${category.name}${this.lineBreak}`
-      
-      for (let entry of category.entries) {
-        content += `####+++Entry ${entry.name}${this.lineBreak}`
-        content += `${this.trimTrailingLineBreaks(entry.value)}${this.lineBreak}`
-        content += `####---Entry ${entry.name}${this.lineBreak}`
-      }
-
-      content += `####---Category ${category.name}${this.lineBreak}`
-    }
+    const content = convertHostsToFile(this.hosts, this.lineBreak);
 
     fs.writeFileSync(hostsPath, content);
-  }
-
-  private trimTrailingLineBreaks(value: string): string {
-    return value;
   }
 
   private getHostsPath(): string | null {
@@ -90,7 +65,7 @@ export class HostsFile {
       return this._resolvedHostsFilePath;
     }
 
-    for (let path of this._hostsFilePaths) {
+    for (const path of this._hostsFilePaths) {
       const pathToUse = path.replace(/%([^%]+)%/gi, (_,n) => process.env[n] || '')
 
       if (fs.existsSync(pathToUse)) {
