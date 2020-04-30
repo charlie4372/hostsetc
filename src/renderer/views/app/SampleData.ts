@@ -7,6 +7,7 @@ const sampleData: Hosts = {
     value: '127.0.0.1  localhost\r\n127.0.0.1  www.hosts-editor.com.au\r\n127.0.0.1  api.hosts-editor.com.au',
     active: true
   },
+  entries: [],
   categories: [
     {
       name: 'Staging',

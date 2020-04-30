@@ -14,7 +14,7 @@
         <app-navigation-drawer
           :hosts="hosts"
           @select-entry="selectEntry($event)"
-          @add-entry="addEntry($event)"
+          @add-entry="startAddingEntry($event)"
         />
         <v-container
           class="fill-height align-start justify-start flex-column"
@@ -34,14 +34,14 @@
             class="w-100 h-100 d-flex flex-column"
             :adding="true"
             :show-name="true"
-            @updated="onAddEntry"
+            @updated="addEntry"
           />
 
           <host-category-editor
             v-else-if="mode === 'view-category'"
             class="w-100 h-100 d-flex flex-column"
             :category="currentCategory"
-            @updated="onUpdateCategory"
+            @updated="updateCategory"
           />
         </v-container>
       </div>
@@ -123,7 +123,7 @@
       });
     }
 
-    protected addEntry(category: HostsCategory): void {
+    protected startAddingEntry(category: HostsCategory): void {
       this.mode = 'add-entry';
       this.$nextTick(() => {
         this.currentCategory = category;
@@ -131,17 +131,24 @@
       });
     }
 
-    protected onAddEntry(category: HostsCategory): void {
-      this.hosts.categories.push(category);
-      this.currentCategory = category;
+    protected addEntry(entry: HostsEntry): void {
+      if (this.currentCategory === null) {
+        this.hosts.entries.push(entry);
+      } else {
+        this.currentCategory.entries.push(entry);
+      }
     }
 
-    protected onUpdateCategory(category: HostsCategory): void {
+    protected updateCategory(category: HostsCategory): void {
       if (this.currentCategory === null) {
         // TODO handle the error
         throw new Error('currentCategory is not set.')
       }
       this.currentCategory.name = category.name;
+    }
+
+    protected addCategory(category: HostsCategory): void {
+      this.hosts.categories.push(category);
     }
   }
 </script>

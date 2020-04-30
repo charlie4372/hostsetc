@@ -1,5 +1,6 @@
 export interface Hosts {
   main: HostsEntry;
+  entries: HostsEntry[];
   categories: HostsCategory[];
   readonly: boolean;
 }

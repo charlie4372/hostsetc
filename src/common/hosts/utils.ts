@@ -68,6 +68,11 @@ function renderEntryRecords(entry: HostsEntry, lineBreak: string): string {
 export function convertHostsToFile(hosts: Hosts, lineBreak = '\n'): string {
   let content = renderEntryRecords(hosts.main, lineBreak) + lineBreak;
 
+  for (const entry of hosts.entries) {
+    content += `####Entry####${entry.name}####${lineBreak}`
+    content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}`
+  }
+
   for (const category of hosts.categories) {
     content += `####Category####${category.name}####${lineBreak}`
 
@@ -92,6 +97,7 @@ export function convertFileToHosts(content: string): Hosts {
       value: '',
       active: false
     },
+    entries: [],
     categories: [],
     readonly: false
   }
@@ -109,18 +115,14 @@ export function convertFileToHosts(content: string): Hosts {
         entries: []
       }
     } else if (startOfEntry !== null) {
+      currentEntry = {
+        name: startOfEntry.groups ? startOfEntry.groups.name : '',
+        value: '',
+        active: false
+      }
       if (currentCategory === null) {
-        if (currentEntry.value.length === 0) {
-          currentEntry.value = line
-        } else {
-          currentEntry.value += '\n' + line;
-        }
+        hosts.entries.push(currentEntry);
       } else {
-        currentEntry = {
-          name: startOfEntry.groups ? startOfEntry.groups.name : '',
-          value: '',
-          active: false
-        }
         currentCategory.entries.push(currentEntry)
       }
     } else {

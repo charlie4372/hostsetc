@@ -8,6 +8,12 @@
         :entry="hosts.main"
         @click="onEntryClick(hosts.main)"
       />
+      <hosts-entry-drawer-item
+        v-for="(entry, entryIndex) in hosts.entries"
+        :key="entryIndex"
+        :entry="entry"
+        @click="onEntryClick(entry)"
+      />
       <v-list-item link>
         <v-list-item-action>
           <v-icon>mdi-contact-mail</v-icon>
@@ -15,7 +21,7 @@
         <v-list-item-content>
           <v-list-item-title
             class="text--secondary"
-            @click="onCategoryClick(null)"
+            @click="onAddEntry(null)"
           >
             New entry
           </v-list-item-title>
