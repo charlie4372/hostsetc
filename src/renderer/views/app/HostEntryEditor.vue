@@ -1,5 +1,5 @@
 <template>
-  <section class="w-100 h-100 d-flex flex-column">
+  <section>
     <div>
       <v-text-field
         v-model="internalName"
@@ -11,18 +11,23 @@
     <text-editor-input
       ref="textEditor"
       class="flex-grow-1 host-entry-editor__text"
+      label="Content"
       :readonly="readonly"
       :content="content"
     />
-    <div>
-      <v-btn>
-        Delete
-      </v-btn>
+    <div class="align-self-end mt-4">
+      <confirm-button
+        button-text="Delete"
+        content="Are you sure you want to delete this entry?"
+      />
       <v-btn @click="onRevert">
         Revert
       </v-btn>
-      <v-btn @click="onUpdate">
-        Save
+      <v-btn
+        color="primary"
+        @click="onUpdate"
+      >
+        Update
       </v-btn>
     </div>
   </section>
@@ -34,11 +39,13 @@
   import {HostsEntry} from "@common/hosts";
   import { Prop, Watch } from 'vue-property-decorator';
   import TextEditorInput from '@renderer/components/editors/TextEditorInput.vue';
+  import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
-      TextEditorInput
+      TextEditorInput,
+      ConfirmButton
     }
   })
   export default class HostEntryEditor extends Vue {
@@ -46,7 +53,7 @@
       textEditor: TextEditorInput;
     }
 
-    @Prop({type: Object})
+    @Prop({type: Object, default: null })
     public readonly entry!: HostsEntry | null;
 
     @Prop({type: Boolean})
@@ -62,7 +69,7 @@
 
     protected get content(): string | null {
       if (this.entry === null) {
-        return null;
+        return '# 127.0.0.1 localhost';
       }
       return this.entry.value;
     }

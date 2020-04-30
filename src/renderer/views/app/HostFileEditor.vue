@@ -1,9 +1,9 @@
 <template>
-  <section
-    class="w-100 h-100 d-flex flex-column">
+  <section>
     <text-editor-input
       ref="textEditor"
       class="flex-grow-1 host-entry-editor__text"
+      label="Content"
       :readonly="readonly"
       :content="content"
     />

@@ -22,6 +22,7 @@
         >
           <host-entry-editor
             v-if="mode === 'view-entry'"
+            class="w-100 h-100 d-flex flex-column"
             :entry="currentEntry"
             :name-readonly="currentEntry === hosts.main"
             :readonly="hosts.readonly"
@@ -30,6 +31,7 @@
 
           <host-entry-editor
             v-else-if="mode === 'add-entry'"
+            class="w-100 h-100 d-flex flex-column"
             :adding="true"
             :show-name="true"
             @updated="onAddEntry"
@@ -37,6 +39,7 @@
 
           <host-category-editor
             v-else-if="mode === 'view-category'"
+            class="w-100 h-100 d-flex flex-column"
             :category="currentCategory"
             @updated="onUpdateCategory"
           />
@@ -114,14 +117,18 @@
 
     protected selectEntry(entry: HostsEntry): void {
       this.mode = 'view-entry';
-      this.currentCategory = null;
-      this.currentEntry = entry;
+      this.$nextTick(() => {
+        this.currentCategory = null;
+        this.currentEntry = entry;
+      });
     }
 
     protected addEntry(category: HostsCategory): void {
-      this.currentEntry = null;
-      this.currentCategory = category;
       this.mode = 'add-entry';
+      this.$nextTick(() => {
+        this.currentCategory = category;
+        this.currentEntry = null;
+      });
     }
 
     protected onAddEntry(category: HostsCategory): void {

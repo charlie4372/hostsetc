@@ -13,7 +13,10 @@
           <v-icon>mdi-contact-mail</v-icon>
         </v-list-item-action>
         <v-list-item-content>
-          <v-list-item-title class="text--secondary">
+          <v-list-item-title
+            class="text--secondary"
+            @click="onCategoryClick(null)"
+          >
             New entry
           </v-list-item-title>
         </v-list-item-content>
@@ -114,7 +117,7 @@
       this.$emit('add-category');
     }
 
-    protected onAddEntry(category: HostsCategory): void {
+    protected onAddEntry(category: HostsCategory | null): void {
       this.$emit('add-entry', category);
     }
   }

@@ -2,7 +2,6 @@
   <div
     ref="editableDiv"
     :contenteditable="readonly ? 'false' : 'true'"
-    :html="internalTextHtml"
   />
 </template>
 
@@ -24,22 +23,23 @@
     @Prop({type: Boolean})
     public readonly readonly!: boolean
 
-    @Prop({type: String, required: true})
+    @Prop({type: String})
     public readonly content!: string | null;
 
-    protected internalTextHtml = '';
+    @Prop({type: String})
+    public readonly label!: string | null;
 
     readonly $refs!: {
       editableDiv: HTMLElement;
     }
 
-    protected created(): void {
-       this.internalTextHtml = htmlEncode.encodeTextFileToHtml(this.content || '');
+    protected mounted(): void {
+      this.$refs.editableDiv.innerHTML = htmlEncode.encodeTextFileToHtml(this.content || '');
     }
 
-    @Watch('input')
-    protected onInputChange(newValue: string | null): void {
-      this.internalTextHtml = htmlEncode.encodeTextFileToHtml(newValue || '');
+    @Watch('content')
+    protected onContentChange(newValue: string | null): void {
+      this.$refs.editableDiv.innerHTML = htmlEncode.encodeTextFileToHtml(newValue || '');
     }
 
     public getContent(): string {
@@ -47,7 +47,7 @@
     }
 
     public revert(): void {
-      this.internalTextHtml = htmlEncode.encodeTextFileToHtml(this.content || '');
+      this.$refs.editableDiv.innerHTML = htmlEncode.encodeTextFileToHtml(this.content || '');
     }
   }
 </script>

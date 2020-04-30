@@ -1,5 +1,5 @@
 <template>
-  <section class="w-100 h-100 d-flex flex-column">
+  <section>
     <div>
       <v-text-field
         v-model="internalName"
