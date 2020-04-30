@@ -17,10 +17,20 @@
     />
     <div class="align-self-end mt-4">
       <confirm-button
+        v-if="adding"
+        button-text="Cancel"
+        content="Are you sure you want to discard these changes?"
+        @click="onCancelAdding"
+      />
+      <confirm-button
+        v-else
         button-text="Delete"
         content="Are you sure you want to delete this entry?"
       />
-      <v-btn @click="onRevert">
+      <v-btn
+        v-if="!adding"
+        @click="onRevert"
+      >
         Revert
       </v-btn>
       <v-btn
@@ -110,6 +120,10 @@
         name: this.internalName || undefined,
         value: this.$refs.textEditor.getContent()
       })
+    }
+
+    protected onCancelAdding(): void {
+      this.$emit('cancel-adding');
     }
   }
 </script>

@@ -35,6 +35,7 @@
             :adding="true"
             :show-name="true"
             @updated="addEntry"
+            @cancel-adding="onCancelAdding"
           />
 
           <host-category-editor
@@ -149,6 +150,14 @@
 
     protected addCategory(category: HostsCategory): void {
       this.hosts.categories.push(category);
+    }
+
+    protected onCancelAdding(): void {
+      this.mode = 'view-entry';
+      this.$nextTick(() => {
+        this.currentCategory = null;
+        this.currentEntry = this.hosts.main;
+      });
     }
   }
 </script>
