@@ -12,7 +12,7 @@
         v-for="(entry, entryIndex) in hosts.entries"
         :key="entryIndex"
         :entry="entry"
-        @click="onEntryClick(entry)"
+        @click="onEntryClick(null, entry)"
       />
       <v-list-item link>
         <v-list-item-action>
@@ -40,7 +40,7 @@
           v-for="(entry, entryIndex) in category.entries"
           :key="entryIndex"
           :entry="entry"
-          @click="onEntryClick(entry)"
+          @click="onEntryClick(category, entry)"
         />
         <v-list-item
           link
@@ -79,7 +79,7 @@
             class="text--secondary"
             @click="onViewFile"
           >
-            File
+            Hosts File
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
@@ -87,6 +87,13 @@
 
     <template v-slot:append>
       <div class="pa-2 psy-2">
+        <div>
+          <v-btn
+            block
+          >
+            Flush DNS
+          </v-btn>
+        </div>
         <div>
           <v-btn
             block
@@ -133,8 +140,8 @@
       this.$emit('select-category', category);
     }
 
-    protected onEntryClick(entry: HostsEntry): void {
-      this.$emit('select-entry', entry);
+    protected onEntryClick(category: HostsCategory | null, entry: HostsEntry | null): void {
+      this.$emit('select-entry', { category, entry });
     }
 
     protected onAddCategory(): void {

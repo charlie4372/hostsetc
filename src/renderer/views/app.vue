@@ -6,7 +6,7 @@
       dark
     >
       <v-app-bar-nav-icon />
-      <v-toolbar-title>Hosted Editor</v-toolbar-title>
+      <v-toolbar-title>Host File Editor</v-toolbar-title>
     </v-app-bar>
 
     <v-content>
@@ -18,12 +18,13 @@
           @view-file="onViewFile"
         />
         <v-container
-          class="fill-height align-start justify-start flex-column"
+          class="fill-height align-start justify-start flex-column app-container"
           fluid
         >
           <host-entry-editor
             v-if="mode === 'view-entry'"
             class="w-100 h-100 d-flex flex-column"
+            :category="currentCategory"
             :entry="currentEntry"
             :name-readonly="currentEntry === hosts.main"
             :readonly="hosts.readonly"
@@ -33,6 +34,7 @@
           <host-entry-editor
             v-else-if="mode === 'add-entry'"
             class="w-100 h-100 d-flex flex-column"
+            :category="currentCategory"
             :adding="true"
             :show-name="true"
             @updated="addEntry"
@@ -51,6 +53,7 @@
             class="w-100 h-100 d-flex flex-column"
             :content="hostsContent"
             :readonly="hosts.readonly"
+            :hosts-path="hostsFile.path"
             @updated="updateHostsFile"
           />
         </v-container>
@@ -103,8 +106,9 @@
       // The TS defaults kick in after the constructor.
       // But if they're not there, then they don't register with vue.
       this.$nextTick(() => {
+        this.hostsFile.hosts = this.sampleData;
         this.hosts = this.sampleData;
-        this.selectEntry(this.hosts.main);
+        this.selectEntry({ category: null, entry: this.hosts.main });
       });
     }
 
@@ -112,7 +116,7 @@
       this.hostsFile.load();
 
       this.hosts = this.hostsFile.hosts;
-      this.selectEntry(this.hosts.main);
+      this.selectEntry({ category: null, entry: this.hosts.main });
     }
 
     protected onUpdateEntry(entry: HostsEntry): void {
@@ -128,10 +132,10 @@
       this.mode = 'view-category';
     }
 
-    protected selectEntry(entry: HostsEntry): void {
+    protected selectEntry({ category, entry }: { category: HostsCategory | null; entry: HostsEntry | null }): void {
       this.mode = 'view-entry';
       this.$nextTick(() => {
-        this.currentCategory = null;
+        this.currentCategory = category;
         this.currentEntry = entry;
       });
     }
@@ -186,4 +190,7 @@
 </script>
 
 <style scoped lang="scss">
+  .app-container {
+    background-color: #ddd;
+  }
 </style>

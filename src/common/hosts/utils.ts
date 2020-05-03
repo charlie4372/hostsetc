@@ -61,7 +61,7 @@ export function formatEntryValueForObject(entry: HostsEntry): string {
   return entry.value.split('\n')
     .map((line) => {
       if (isRecordSignificant(line)) {
-        return formatEntryRecord(line, false);
+        return formatEntryRecord(line);
       } else {
         return line;
       }
@@ -89,11 +89,11 @@ function renderEntryRecords(entry: HostsEntry, lineBreak: string): string {
 }
 
 export function convertHostsToFile(hosts: Hosts, lineBreak = '\n'): string {
-  let content = renderEntryRecords(hosts.main, lineBreak) + lineBreak + lineBreak;
+  let content = renderEntryRecords(hosts.main, lineBreak) + lineBreak;
 
   for (const entry of hosts.entries) {
     content += `####Entry:${entry.name}####${lineBreak}`
-    content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}${lineBreak}`
+    content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}`
   }
 
   for (const category of hosts.categories) {
@@ -101,7 +101,7 @@ export function convertHostsToFile(hosts: Hosts, lineBreak = '\n'): string {
 
     for (const entry of category.entries) {
       content += `####Entry:${entry.name}####${lineBreak}`
-      content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}${lineBreak}`
+      content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}`
     }
   }
 

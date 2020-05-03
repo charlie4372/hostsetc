@@ -1,52 +1,62 @@
 <template>
-  <section>
-    <div>
-      <v-text-field
-        v-model="internalName"
-        label="Name"
-        required
-        :readonly="readonly || nameReadonly"
+  <v-card>
+    <v-card-title v-if="category && category.name">
+      {{ category.name }}
+    </v-card-title>
+    <v-card-text class="h-100 d-flex flex-column">
+      <div>
+        <v-text-field
+          v-model="internalName"
+          label="Name"
+          required
+          :readonly="readonly || nameReadonly"
+          @change="onChange"
+        />
+      </div>
+      <text-editor-input
+        ref="textEditor"
+        class="flex-grow-1 host-entry-editor__text"
+        label="Content"
+        :readonly="readonly"
+        :content="content"
+        @change="onChange"
       />
-    </div>
-    <text-editor-input
-      ref="textEditor"
-      class="flex-grow-1 host-entry-editor__text"
-      label="Content"
-      :readonly="readonly"
-      :content="content"
-    />
-    <div class="align-self-end mt-4">
-      <confirm-button
-        v-if="adding"
-        button-text="Cancel"
-        content="Are you sure you want to discard these changes?"
-        @click="onCancelAdding"
-      />
-      <confirm-button
-        v-else
-        button-text="Delete"
-        content="Are you sure you want to delete this entry?"
-      />
-      <v-btn
-        v-if="!adding"
-        @click="onRevert"
-      >
-        Revert
-      </v-btn>
-      <v-btn
-        color="primary"
-        @click="onUpdate"
-      >
-        Update
-      </v-btn>
-    </div>
-  </section>
+      <div class="align-self-end mt-4">
+        <confirm-button
+          v-if="adding"
+          button-text="Cancel"
+          content="Are you sure you want to discard these changes?"
+          @click="onCancelAdding"
+        />
+        <confirm-button
+          v-else
+          button-text="Delete"
+          content="Are you sure you want to delete this entry?"
+          :disabled="!changed"
+        />
+        <v-btn
+          v-if="!adding"
+          :disabled="!changed"
+          @click="onRevert"
+        >
+          Revert
+        </v-btn>
+        <v-btn
+          color="primary"
+          :disabled="!changed"
+          @click="onUpdate"
+        >
+          Update
+        </v-btn>
+      </div>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {HostsEntry} from "@common/hosts";
+  import {HostsCategory, HostsEntry} from "@common/hosts";
   import { Prop, Watch } from 'vue-property-decorator';
   import TextEditorInput from '@renderer/components/editors/TextEditorInput.vue';
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
@@ -66,6 +76,9 @@
     @Prop({type: Object, default: null })
     public readonly entry!: HostsEntry | null;
 
+    @Prop({type: Object, default: null })
+    public readonly category!: HostsCategory | null;
+
     @Prop({type: Boolean})
     public readonly nameReadonly!: boolean;
 
@@ -76,6 +89,7 @@
     public readonly adding!: boolean;
 
     protected internalName = '';
+    protected changed = false;
 
     protected get content(): string | null {
       if (this.entry === null) {
@@ -112,6 +126,7 @@
       }
 
       this.internalName = entry.name;
+      this.changed = false;
     }
 
     protected onUpdate(): void {
@@ -124,6 +139,10 @@
 
     protected onCancelAdding(): void {
       this.$emit('cancel-adding');
+    }
+
+    protected onChange(): void {
+      this.changed = true;
     }
   }
 </script>

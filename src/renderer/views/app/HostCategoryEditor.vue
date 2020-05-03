@@ -1,25 +1,27 @@
 <template>
-  <section>
-    <div>
-      <v-text-field
-        v-model="internalName"
-        label="Name"
-        required
-        :readonly="readonly"
-      />
-    </div>
-    <div>
-      <v-btn>
-        Delete
-      </v-btn>
-      <v-btn @click="onRevert">
-        Revert
-      </v-btn>
-      <v-btn @click="onUpdate">
-        Update
-      </v-btn>
-    </div>
-  </section>
+  <v-card>
+    <v-card-text class="h-100 d-flex flex-column">
+      <div>
+        <v-text-field
+          v-model="internalName"
+          label="Name"
+          required
+          :readonly="readonly"
+        />
+      </div>
+      <div class="align-self-end mt-4">
+        <v-btn>
+          Delete
+        </v-btn>
+        <v-btn @click="onRevert">
+          Revert
+        </v-btn>
+        <v-btn @click="onUpdate">
+          Update
+        </v-btn>
+      </div>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script lang="ts">

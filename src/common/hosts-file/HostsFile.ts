@@ -7,7 +7,7 @@ import process from 'process';
 
 export class HostsFile {
   private _hostsFilePaths: string[] = [
-    '%SystemRoot%/system32/drivers/etc/hosts',
+    '%SystemRoot%\\system32\\drivers\\etc\\hosts',
     '/etc/hosts'
   ]
 
@@ -21,8 +21,12 @@ export class HostsFile {
     this.load();
   }
 
-  public load(): void {
-    const hostsPath = this.getHostsPath();
+  public get path(): string {
+    return this._resolvedHostsFilePath || '';
+  }
+
+  public load(path?: string): void {
+    const hostsPath = path && fs.existsSync(path) ? path : this.getHostsPath();
     if (hostsPath === null) {
       this.hosts = {
         main: {
@@ -30,6 +34,7 @@ export class HostsFile {
           value: '# The hosts file could not be found.',
           active: false
         },
+        entries: [],
         categories: [],
         readonly: true
       }

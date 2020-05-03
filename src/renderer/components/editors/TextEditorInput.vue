@@ -1,8 +1,9 @@
 <template>
   <div
-    class="text-editor-input"
     ref="editableDiv"
+    class="text-editor-input"
     :contenteditable="readonly ? 'false' : 'true'"
+    @keydown="$emit('change')"
   />
 </template>
 
@@ -20,6 +21,9 @@
     }
   })
   export default class TextEditorInput extends Vue {
+    readonly $refs!: {
+      editableDiv: HTMLElement;
+    }
 
     @Prop({type: Boolean})
     public readonly readonly!: boolean
@@ -29,10 +33,6 @@
 
     @Prop({type: String})
     public readonly label!: string | null;
-
-    readonly $refs!: {
-      editableDiv: HTMLElement;
-    }
 
     protected mounted(): void {
       this.$refs.editableDiv.innerHTML = htmlEncode.encodeTextFileToHtml(this.content || '');

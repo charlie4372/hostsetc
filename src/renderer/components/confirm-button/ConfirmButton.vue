@@ -8,6 +8,7 @@
       <v-btn
         :color="buttonColor"
         :block="buttonBlock"
+        :disabled="buttonDisabled"
         v-on="on"
       >
         {{ buttonText }}
@@ -59,6 +60,12 @@
     @Prop({type: String })
     public readonly buttonColor!: string | null;
 
+    @Prop({type: Boolean})
+    public readonly buttonBlock!: boolean;
+
+    @Prop({type: Boolean})
+    public readonly buttonDisabled!: boolean;
+
     @Prop({type: String, default: 'Are you sure?' })
     public readonly title!: string;
 
@@ -70,9 +77,6 @@
 
     @Prop({type: String, default: 'Cancel'})
     public readonly cancelText!: string;
-
-    @Prop({type: Boolean})
-    public readonly buttonBlock!: boolean;
 
     protected onClose(confirmed: boolean): void {
       if (confirmed) {
