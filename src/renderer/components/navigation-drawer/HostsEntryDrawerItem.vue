@@ -4,9 +4,10 @@
     @click="$emit('click', entry)"
   >
     <v-list-item-action>
-      <v-icon v-show="entry.active">
-        mdi-check
-      </v-icon>
+      <v-switch
+        v-model="lazyActive"
+        @change="onActiveChange"
+      />
     </v-list-item-action>
     <v-list-item-content>
       <v-list-item-title v-if="name">
@@ -23,7 +24,7 @@
   import Vue from 'vue';
   import Component from 'vue-class-component';
   import {HostsEntry} from '@common/hosts';
-  import {Prop} from 'vue-property-decorator';
+  import {Prop, Watch} from 'vue-property-decorator';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -36,6 +37,21 @@
 
     @Prop({ type: String })
     public readonly name?: string;
+
+    protected lazyActive!: boolean;
+
+    public created(): void {
+      this.lazyActive = this.entry.active;
+    }
+
+    @Watch('entry')
+    protected onEntryChanged(newValue: HostsEntry): void {
+      this.lazyActive = newValue.active;
+    }
+
+    protected onActiveChange(newValue: boolean): void {
+      this.$emit('activate', newValue);
+    }
   }
 </script>
 

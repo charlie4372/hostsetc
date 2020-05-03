@@ -17,6 +17,7 @@
           @select-entry="selectEntry($event)"
           @add-entry="startAddingEntry($event)"
           @view-file="onViewFile"
+          @update="onUpdateEntry($event)"
         />
         <v-container
           class="fill-height align-start justify-start flex-column app-container"
@@ -65,7 +66,7 @@
       color="indigo"
       app
     >
-      <span class="white--text">&copy; 2019</span>
+      <span class="white--text">&copy; 2020 Charlie Broad</span>
     </v-footer>
   </v-app>
 </template>
@@ -127,6 +128,7 @@
       if (this.currentEntry != null) {
         this.currentEntry.name = entry.name;
         this.currentEntry.value = entry.value;
+        this.currentEntry.active = entry.active;
       }
       this.changed = true;
     }

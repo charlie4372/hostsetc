@@ -13,6 +13,7 @@
         :key="entryIndex"
         :entry="entry"
         @click="onEntryClick(null, entry)"
+        @activate="onActivate(entry, $event)"
       />
       <v-list-item link>
         <v-list-item-action>
@@ -41,6 +42,7 @@
           :key="entryIndex"
           :entry="entry"
           @click="onEntryClick(category, entry)"
+          @activate="onActivate(entry, $event)"
         />
         <v-list-item
           link
@@ -76,7 +78,6 @@
       >
         <v-list-item-content>
           <v-list-item-title
-            class="text--secondary"
             @click="onViewFile"
           >
             Hosts File
@@ -158,6 +159,13 @@
 
     protected onViewFile(): void {
       this.$emit('view-file');
+    }
+
+    protected onActivate(entry: HostsEntry, activate: boolean): void {
+      this.$emit('update', {
+        ...entry,
+        active: activate
+      });
     }
   }
 </script>
