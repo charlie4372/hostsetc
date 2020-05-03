@@ -5,8 +5,8 @@ const ipV6Record = /^\s*#?\s*(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}\s+([^#]+)/;
 const hasLeadingComment = /^\s*[^#]/;
 const leadingComment = /^\s*#+\s*/;
 
-const startOfCategoryBlock = /^####Category####(?<name>.*)####$/
-const startOfEntryBlock = /^####Entry####(?<name>.*)####$/
+const startOfCategoryBlock = /^####Category:(?<name>.*)####$/
+const startOfEntryBlock = /^####Entry:(?<name>.*)####$/
 
 export function isIpV4Record(line: string): boolean {
   return line.match(ipV4Record) !== null;
@@ -24,7 +24,15 @@ export function isRecordSignificant(line: string): boolean {
   return isIpV4Record(line) || isIpV6Record(line);
 }
 
-export function setRecordActive(line: string, isActive: boolean): string {
+export function formatEntryRecord(line: string): string {
+  if (!isRecordSignificant(line)) {
+    return line;
+  }
+
+  return line.replace(leadingComment, '');
+}
+
+export function renderEntryRecord(line: string, isActive: boolean): string {
   if (!isRecordSignificant(line)) {
     return line;
   }
@@ -32,7 +40,10 @@ export function setRecordActive(line: string, isActive: boolean): string {
   if (isActive) {
     return line.replace(leadingComment, '');
   } else {
-    return line.replace(leadingComment, '#');
+    if (line.match(leadingComment)) {
+      return line;
+    }
+    return '#' + line;
   }
 }
 
@@ -50,7 +61,7 @@ export function formatEntryValueForObject(entry: HostsEntry): string {
   return entry.value.split('\n')
     .map((line) => {
       if (isRecordSignificant(line)) {
-        return setRecordActive(line, false);
+        return formatEntryRecord(line, false);
       } else {
         return line;
       }
@@ -59,26 +70,38 @@ export function formatEntryValueForObject(entry: HostsEntry): string {
 }
 
 function renderEntryRecords(entry: HostsEntry, lineBreak: string): string {
-  return entry.value
+  const lines = entry.value
     .split('\n')
-    .map(line => setRecordActive(line, entry.active))
-    .join(lineBreak);
+    .map(line => renderEntryRecord(line, entry.active))
+
+  // // Remove the trailing line breaks
+  // let lineIndex = lines.length - 1;
+  // while (lineIndex >= 0) {
+  //   if (lines[lineIndex].trim() === '') {
+  //     lines.splice(lineIndex, 1);
+  //     lineIndex--;
+  //   } else {
+  //     return lines.join(lineBreak);
+  //   }
+  // }
+
+  return lines.join(lineBreak);
 }
 
 export function convertHostsToFile(hosts: Hosts, lineBreak = '\n'): string {
-  let content = renderEntryRecords(hosts.main, lineBreak) + lineBreak;
+  let content = renderEntryRecords(hosts.main, lineBreak) + lineBreak + lineBreak;
 
   for (const entry of hosts.entries) {
-    content += `####Entry####${entry.name}####${lineBreak}`
-    content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}`
+    content += `####Entry:${entry.name}####${lineBreak}`
+    content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}${lineBreak}`
   }
 
   for (const category of hosts.categories) {
-    content += `####Category####${category.name}####${lineBreak}`
+    content += `####Category:${category.name}####${lineBreak}`
 
     for (const entry of category.entries) {
-      content += `####Entry####${entry.name}####${lineBreak}`
-      content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}`
+      content += `####Entry:${entry.name}####${lineBreak}`
+      content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}${lineBreak}`
     }
   }
 
@@ -114,6 +137,7 @@ export function convertFileToHosts(content: string): Hosts {
         name: startOfCategory.groups ? startOfCategory.groups.name : '',
         entries: []
       }
+      hosts.categories.push(currentCategory);
     } else if (startOfEntry !== null) {
       currentEntry = {
         name: startOfEntry.groups ? startOfEntry.groups.name : '',

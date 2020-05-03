@@ -7,15 +7,15 @@
       :readonly="readonly"
       :content="content"
     />
-    <div>
-      <v-btn>
-        Delete
-      </v-btn>
+    <div class="align-self-end mt-4">
       <v-btn @click="onRevert">
         Revert
       </v-btn>
-      <v-btn @click="onUpdate">
-        Save
+      <v-btn
+        color="primary"
+        @click="onUpdate"
+      >
+        Update
       </v-btn>
     </div>
   </section>

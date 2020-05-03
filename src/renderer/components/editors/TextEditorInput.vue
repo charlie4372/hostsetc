@@ -1,5 +1,6 @@
 <template>
   <div
+    class="text-editor-input"
     ref="editableDiv"
     :contenteditable="readonly ? 'false' : 'true'"
   />
@@ -53,5 +54,7 @@
 </script>
 
 <style scoped lang="scss">
-
+  .text-editor-input {
+    outline: none;
+  }
 </style>

@@ -6,7 +6,7 @@
       dark
     >
       <v-app-bar-nav-icon />
-      <v-toolbar-title>Application</v-toolbar-title>
+      <v-toolbar-title>Hosted Editor</v-toolbar-title>
     </v-app-bar>
 
     <v-content>
@@ -15,6 +15,7 @@
           :hosts="hosts"
           @select-entry="selectEntry($event)"
           @add-entry="startAddingEntry($event)"
+          @view-file="onViewFile"
         />
         <v-container
           class="fill-height align-start justify-start flex-column"
@@ -44,6 +45,14 @@
             :category="currentCategory"
             @updated="updateCategory"
           />
+
+          <host-file-editor
+            v-else-if="mode === 'view-file'"
+            class="w-100 h-100 d-flex flex-column"
+            :content="hostsContent"
+            :readonly="hosts.readonly"
+            @updated="updateHostsFile"
+          />
         </v-container>
       </div>
     </v-content>
@@ -59,18 +68,20 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {Hosts, HostsCategory, HostsEntry} from '@common/hosts';
+  import {convertFileToHosts, convertHostsToFile, Hosts, HostsCategory, HostsEntry} from '@common/hosts';
   import HostEntryEditor from "@renderer/views/app/HostEntryEditor.vue";
   import {HostsFile} from "@common/hosts-file/HostsFile";
   import HostCategoryEditor from "@renderer/views/app/HostCategoryEditor.vue";
   import AppNavigationDrawer from "@renderer/views/app/AppNavigationDrawer.vue";
   import sampleData from "@renderer/views/app/SampleData";
+  import HostFileEditor from "@renderer/views/app/HostFileEditor.vue";
 
-  type viewMode = 'view-entry'|'view-category'|'add-entry'|'add-category';
+  type viewMode = 'view-entry'|'view-category'|'add-entry'|'add-category'|'view-file';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
+      HostFileEditor,
       HostCategoryEditor,
       HostEntryEditor,
       AppNavigationDrawer
@@ -84,6 +95,7 @@
     protected currentEntry: HostsEntry | null = null;
     protected hosts: Hosts = this.sampleData;
     protected hostsFile: HostsFile = new HostsFile();
+    protected hostsContent = '';
 
     public constructor() {
       super();
@@ -158,6 +170,17 @@
         this.currentCategory = null;
         this.currentEntry = this.hosts.main;
       });
+    }
+
+    protected onViewFile(): void {
+      this.mode = 'view-file';
+      this.$nextTick(() => {
+        this.hostsContent = convertHostsToFile(this.hosts);
+      });
+    }
+
+    protected updateHostsFile(content: string): void {
+      this.hosts = convertFileToHosts(content);
     }
   }
 </script>

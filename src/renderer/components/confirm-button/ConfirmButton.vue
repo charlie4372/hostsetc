@@ -7,6 +7,7 @@
     <template v-slot:activator="{ on }">
       <v-btn
         :color="buttonColor"
+        :block="buttonBlock"
         v-on="on"
       >
         {{ buttonText }}
@@ -69,6 +70,9 @@
 
     @Prop({type: String, default: 'Cancel'})
     public readonly cancelText!: string;
+
+    @Prop({type: Boolean})
+    public readonly buttonBlock!: boolean;
 
     protected onClose(confirmed: boolean): void {
       if (confirmed) {

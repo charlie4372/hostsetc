@@ -70,6 +70,19 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+
+      <v-list-item
+        link
+      >
+        <v-list-item-content>
+          <v-list-item-title
+            class="text--secondary"
+            @click="onViewFile"
+          >
+            File
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
 
     <template v-slot:append>
@@ -83,9 +96,12 @@
           </v-btn>
         </div>
         <div>
-          <v-btn block>
-            Save
-          </v-btn>
+          <confirm-button
+            :button-block="true"
+            button-color="primary"
+            button-text="Save"
+            content="This will update your hosts file."
+          />
         </div>
       </div>
     </template>
@@ -99,10 +115,12 @@
   import HostsCategoryDrawerItem from '@renderer/components/navigation-drawer/HostsCategoryDrawerItem.vue';
   import {Hosts, HostsCategory, HostsEntry} from "@common/hosts";
   import {Prop} from "vue-property-decorator";
+  import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
+      ConfirmButton,
       HostsEntryDrawerItem,
       HostsCategoryDrawerItem
     }
@@ -125,6 +143,10 @@
 
     protected onAddEntry(category: HostsCategory | null): void {
       this.$emit('add-entry', category);
+    }
+
+    protected onViewFile(): void {
+      this.$emit('view-file');
     }
   }
 </script>
