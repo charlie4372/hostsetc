@@ -29,7 +29,7 @@
           @click="onCancelAdding"
         />
         <confirm-button
-          v-else
+          v-else-if="canDelete"
           button-text="Delete"
           content="Are you sure you want to delete this entry?"
           :disabled="!changed"
@@ -87,6 +87,9 @@
 
     @Prop({type: Boolean})
     public readonly adding!: boolean;
+
+    @Prop({type: Boolean})
+    public readonly canDelete!: boolean;
 
     protected internalName = '';
     protected changed = false;

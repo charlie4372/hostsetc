@@ -6,7 +6,7 @@
       <hosts-entry-drawer-item
         name="Main"
         :entry="hosts.main"
-        @click="onEntryClick(hosts.main)"
+        @click="onEntryClick(null, hosts.main)"
       />
       <hosts-entry-drawer-item
         v-for="(entry, entryIndex) in hosts.entries"
@@ -105,6 +105,7 @@
         <div>
           <confirm-button
             :button-block="true"
+            :button-disabled="!changed"
             button-color="primary"
             button-text="Save"
             content="This will update your hosts file."
@@ -135,6 +136,9 @@
   export default class  extends Vue {
     @Prop({ type: Object, required: true })
     public readonly hosts!: Hosts;
+
+    @Prop({ type: Boolean })
+    public readonly changed!: boolean;
 
     protected onCategoryClick(category: HostsCategory): void {
       this.$emit('select-category', category);

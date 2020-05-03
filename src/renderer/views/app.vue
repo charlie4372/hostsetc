@@ -13,6 +13,7 @@
       <div class="d-flex h-100">
         <app-navigation-drawer
           :hosts="hosts"
+          :changed="changed"
           @select-entry="selectEntry($event)"
           @add-entry="startAddingEntry($event)"
           @view-file="onViewFile"
@@ -28,6 +29,7 @@
             :entry="currentEntry"
             :name-readonly="currentEntry === hosts.main"
             :readonly="hosts.readonly"
+            :can-delete="currentEntry !== hosts.main"
             @updated="onUpdateEntry"
           />
 
@@ -99,6 +101,7 @@
     protected hosts: Hosts = this.sampleData;
     protected hostsFile: HostsFile = new HostsFile();
     protected hostsContent = '';
+    protected changed = false;
 
     public constructor() {
       super();
@@ -117,6 +120,7 @@
 
       this.hosts = this.hostsFile.hosts;
       this.selectEntry({ category: null, entry: this.hosts.main });
+      this.changed = false;
     }
 
     protected onUpdateEntry(entry: HostsEntry): void {
@@ -124,6 +128,7 @@
         this.currentEntry.name = entry.name;
         this.currentEntry.value = entry.value;
       }
+      this.changed = true;
     }
 
     protected setCurrentCategory(category: HostsCategory): void {
@@ -154,6 +159,7 @@
       } else {
         this.currentCategory.entries.push(entry);
       }
+      this.changed = true;
     }
 
     protected updateCategory(category: HostsCategory): void {
@@ -162,10 +168,12 @@
         throw new Error('currentCategory is not set.')
       }
       this.currentCategory.name = category.name;
+      this.changed = true;
     }
 
     protected addCategory(category: HostsCategory): void {
       this.hosts.categories.push(category);
+      this.changed = true;
     }
 
     protected onCancelAdding(): void {
@@ -185,6 +193,11 @@
 
     protected updateHostsFile(content: string): void {
       this.hosts = convertFileToHosts(content);
+      this.changed = true;
+
+      this.$nextTick(() => {
+        this.hostsContent = convertHostsToFile(this.hosts);
+      });
     }
   }
 </script>
