@@ -18,7 +18,9 @@
             @click="onViewCategory(categoryIndex)"
           >
             <v-list-item-content>
-              <v-list-item-title class="title">{{ category.name }}</v-list-item-title>
+              <v-list-item-title class="font-weight-bold">
+                {{ category.name }}
+              </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
 
@@ -61,9 +63,7 @@
           @click="onAddCategory"
         >
           <v-list-item-content>
-            <v-list-item-title
-              class="text--secondary"
-            >
+            <v-list-item-title class="text--secondary">
               New category
             </v-list-item-title>
           </v-list-item-content>
@@ -74,7 +74,9 @@
           @click="$emit('view-hosts-file')"
         >
           <v-list-item-content>
-            <v-list-item-title class="title">Hosts File</v-list-item-title>
+            <v-list-item-title class="font-weight-bold">
+              Hosts File
+            </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list-item-group>
