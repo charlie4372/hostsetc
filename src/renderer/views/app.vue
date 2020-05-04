@@ -14,50 +14,52 @@
         <app-navigation-drawer
           :hosts="hosts"
           :changed="changed"
-          @select-entry="selectEntry($event)"
-          @add-entry="startAddingEntry($event)"
-          @view-file="onViewFile"
-          @update="onUpdateEntry($event)"
+          :current-category-index="currentCategoryIndex"
+          :current-entry-index="currentEntryIndex"
+          :current-action="currentAction"
+          @view-entry="onViewEntry"
+          @add-entry="onAddEntry"
+          @view-hosts-file="onViewHostsFile"
         />
         <v-container
           class="fill-height align-start justify-start flex-column app-container"
           fluid
         >
           <host-entry-editor
-            v-if="mode === 'view-entry'"
+            v-if="currentAction === 'view-entry'"
             class="w-100 h-100 d-flex flex-column"
             :category="currentCategory"
             :entry="currentEntry"
-            :name-readonly="currentEntry === hosts.main"
+            :name-readonly="currentEntryIndex === 0 && currentCategoryIndex === 0"
             :readonly="hosts.readonly"
-            :can-delete="currentEntry !== hosts.main"
-            @updated="onUpdateEntry"
+            :can-delete="currentEntryIndex !== 0"
+            @updated="onEntryUpdated"
+            @deleted="onEntryDeleted"
           />
 
           <host-entry-editor
-            v-else-if="mode === 'add-entry'"
+            v-else-if="currentAction === 'add-entry'"
             class="w-100 h-100 d-flex flex-column"
             :category="currentCategory"
             :adding="true"
             :show-name="true"
-            @updated="addEntry"
-            @cancel-adding="onCancelAdding"
+            @updated="onEntryAdded"
+            @cancel-adding="onEntryCancelAdding"
           />
 
           <host-category-editor
-            v-else-if="mode === 'view-category'"
+            v-else-if="currentAction === 'view-category'"
             class="w-100 h-100 d-flex flex-column"
             :category="currentCategory"
-            @updated="updateCategory"
           />
 
           <host-file-editor
-            v-else-if="mode === 'view-file'"
+            v-else-if="currentAction === 'view-file'"
             class="w-100 h-100 d-flex flex-column"
             :content="hostsContent"
             :readonly="hosts.readonly"
             :hosts-path="hostsFile.path"
-            @updated="updateHostsFile"
+            @updated="onUpdateHostsFile"
           />
         </v-container>
       </div>
@@ -74,19 +76,20 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {convertFileToHosts, convertHostsToFile, Hosts, HostsCategory, HostsEntry} from '@common/hosts';
+  import {Hosts, HostsCategory, HostsEntry, convertHostsToFile, convertFileToHosts} from '@common/hosts';
   import HostEntryEditor from "@renderer/views/app/HostEntryEditor.vue";
   import {HostsFile} from "@common/hosts-file/HostsFile";
   import HostCategoryEditor from "@renderer/views/app/HostCategoryEditor.vue";
   import AppNavigationDrawer from "@renderer/views/app/AppNavigationDrawer.vue";
   import sampleData from "@renderer/views/app/SampleData";
   import HostFileEditor from "@renderer/views/app/HostFileEditor.vue";
-
-  type viewMode = 'view-entry'|'view-category'|'add-entry'|'add-category'|'view-file';
+  import {NavigationDrawAction, NavigationDrawSelection} from './app/types';
+  import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
+      ConfirmButton,
       HostFileEditor,
       HostCategoryEditor,
       HostEntryEditor,
@@ -96,13 +99,21 @@
   export default class App extends Vue {
     private sampleData: Hosts = sampleData;
 
-    protected mode: viewMode = "view-entry";
-    protected currentCategory: HostsCategory | null = null;
-    protected currentEntry: HostsEntry | null = null;
+    protected currentAction: NavigationDrawAction = 'view-entry';
+    protected currentCategoryIndex = 0;
+    protected currentEntryIndex = 0;
     protected hosts: Hosts = this.sampleData;
     protected hostsFile: HostsFile = new HostsFile();
     protected hostsContent = '';
     protected changed = false;
+
+    protected get currentCategory(): HostsCategory {
+      return this.hosts.categories[this.currentCategoryIndex];
+    }
+
+    protected get currentEntry(): HostsEntry {
+      return this.currentCategory.entries[this.currentEntryIndex];
+    }
 
     public constructor() {
       super();
@@ -112,7 +123,7 @@
       this.$nextTick(() => {
         this.hostsFile.hosts = this.sampleData;
         this.hosts = this.sampleData;
-        this.selectEntry({ category: null, entry: this.hosts.main });
+        this.viewEntry(0, 0);
       });
     }
 
@@ -120,80 +131,88 @@
       this.hostsFile.load();
 
       this.hosts = this.hostsFile.hosts;
-      this.selectEntry({ category: null, entry: this.hosts.main });
+      this.viewEntry(0, 0);
       this.changed = false;
     }
 
-    protected onUpdateEntry(entry: HostsEntry): void {
-      if (this.currentEntry != null) {
-        this.currentEntry.name = entry.name;
-        this.currentEntry.value = entry.value;
-        this.currentEntry.active = entry.active;
-      }
+    protected onEntryUpdated(entry: HostsEntry): void {
+      this.currentEntry.name = entry.name;
+      this.currentEntry.value = entry.value;
+      this.currentEntry.active = entry.active;
       this.changed = true;
     }
 
-    protected setCurrentCategory(category: HostsCategory): void {
-      this.currentCategory = category;
-      this.currentEntry = null;
-      this.mode = 'view-category';
+    protected onEntryAdded(entry: HostsEntry): void {
+      this.currentCategory.entries.push(entry);
+      this.viewEntry(this.currentCategoryIndex, this.currentCategory.entries.length - 1);
+      this.changed = true;
     }
 
-    protected selectEntry({ category, entry }: { category: HostsCategory | null; entry: HostsEntry | null }): void {
-      this.mode = 'view-entry';
+    protected viewEntry(categoryIndex: number, entryIndex: number): void {
+      this.currentAction = 'view-entry';
       this.$nextTick(() => {
-        this.currentCategory = category;
-        this.currentEntry = entry;
+        this.currentCategoryIndex = categoryIndex;
+        this.currentEntryIndex = entryIndex;
       });
     }
 
-    protected startAddingEntry(category: HostsCategory): void {
-      this.mode = 'add-entry';
+    protected onViewEntry(value: NavigationDrawSelection): void {
+      this.viewEntry(value.categoryIndex, value.entryIndex);
+    }
+
+    protected onAddEntry(value: NavigationDrawSelection): void {
+      this.currentAction = 'add-entry';
       this.$nextTick(() => {
-        this.currentCategory = category;
-        this.currentEntry = null;
+        this.currentCategoryIndex = value.categoryIndex;
+        this.currentEntryIndex = value.entryIndex;
       });
     }
 
-    protected addEntry(entry: HostsEntry): void {
-      if (this.currentCategory === null) {
-        this.hosts.entries.push(entry);
-      } else {
-        this.currentCategory.entries.push(entry);
-      }
-      this.changed = true;
+    protected onEntryDeleted(): void {
+      this.currentCategory.entries.splice(this.currentEntryIndex, 1);
+      this.currentEntryIndex--;
     }
 
-    protected updateCategory(category: HostsCategory): void {
-      if (this.currentCategory === null) {
-        // TODO handle the error
-        throw new Error('currentCategory is not set.')
-      }
-      this.currentCategory.name = category.name;
-      this.changed = true;
+    protected onEntryCancelAdding(): void {
+      this.viewEntry(this.currentEntryIndex, 0);
     }
 
-    protected addCategory(category: HostsCategory): void {
-      this.hosts.categories.push(category);
-      this.changed = true;
-    }
+    // protected startAddingEntry(categoryIndex: number | null): void {
+    //   this.mode = 'add-entry';
+    //   this.$nextTick(() => {
+    //     this.selectEntry(categoryIndex, null);
+    //   });
+    // }
 
-    protected onCancelAdding(): void {
-      this.mode = 'view-entry';
-      this.$nextTick(() => {
-        this.currentCategory = null;
-        this.currentEntry = this.hosts.main;
-      });
-    }
+    // protected addEntry(entry: HostsEntry): void {
+    //   this.currentCategory.entries.push(entry);
+    //   this.selectEntry(this.currentCategoryIndex, this.hosts.entries.length - 1);
+    // }
 
-    protected onViewFile(): void {
-      this.mode = 'view-file';
+    // protected updateCategory(category: HostsCategory): void {
+    //   if (this.currentCategory === null) {
+    //     // TODO handle the error
+    //     throw new Error('currentCategory is not set.')
+    //   }
+    //   this.currentCategory.name = category.name;
+    //   this.changed = true;
+    // }
+
+    // protected onCancelAdding(): void {
+    //   this.mode = 'view-entry';
+    //   this.$nextTick(() => {
+    //     this.selectEntry(null, 0);
+    //   });
+    // }
+
+    protected onViewHostsFile(): void {
+      this.currentAction = 'view-file';
       this.$nextTick(() => {
         this.hostsContent = convertHostsToFile(this.hosts);
       });
     }
 
-    protected updateHostsFile(content: string): void {
+    protected onUpdateHostsFile(content: string): void {
       this.hosts = convertFileToHosts(content);
       this.changed = true;
 

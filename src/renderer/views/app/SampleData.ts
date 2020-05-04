@@ -2,13 +2,17 @@ import {Hosts} from "@common/hosts";
 
 const sampleData: Hosts = {
   readonly: false,
-  main: {
-    name: 'Main',
-    value: '127.0.0.1  localhost\r\n127.0.0.1  www.hosts-editor.com.au\r\n127.0.0.1  api.hosts-editor.com.au\r\n',
-    active: true
-  },
-  entries: [],
   categories: [
+    {
+      name: 'Default',
+      entries: [
+        {
+          name: 'Main',
+          value: '127.0.0.1  localhost\r\n127.0.0.1  www.hosts-editor.com.au\r\n127.0.0.1  api.hosts-editor.com.au\r\n',
+          active: true
+        }
+      ]
+    },
     {
       name: 'Staging',
       entries: [

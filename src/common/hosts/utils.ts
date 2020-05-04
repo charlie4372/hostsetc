@@ -72,35 +72,29 @@ export function formatEntryValueForObject(entry: HostsEntry): string {
 function renderEntryRecords(entry: HostsEntry, lineBreak: string): string {
   const lines = entry.value
     .split('\n')
-    .map(line => renderEntryRecord(line, entry.active))
-
-  // // Remove the trailing line breaks
-  // let lineIndex = lines.length - 1;
-  // while (lineIndex >= 0) {
-  //   if (lines[lineIndex].trim() === '') {
-  //     lines.splice(lineIndex, 1);
-  //     lineIndex--;
-  //   } else {
-  //     return lines.join(lineBreak);
-  //   }
-  // }
+    .map(line => renderEntryRecord(line, entry.active));
 
   return lines.join(lineBreak);
 }
 
 export function convertHostsToFile(hosts: Hosts, lineBreak = '\n'): string {
-  let content = renderEntryRecords(hosts.main, lineBreak) + lineBreak;
+  // The first category, and the first entry do not get headers.
+  // This is where the normal hosts file lives
+  let content = '';
 
-  for (const entry of hosts.entries) {
-    content += `####Entry:${entry.name}####${lineBreak}`
-    content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}`
-  }
+  for (let categoryIndex = 0; categoryIndex < hosts.categories.length; categoryIndex++) {
+    const category = hosts.categories[categoryIndex];
 
-  for (const category of hosts.categories) {
-    content += `####Category:${category.name}####${lineBreak}`
+    if (categoryIndex !== 0) {
+      content += `####Category:${category.name}####${lineBreak}`
+    }
 
-    for (const entry of category.entries) {
-      content += `####Entry:${entry.name}####${lineBreak}`
+    for (let entryIndex = 0; entryIndex < category.entries.length; entryIndex++) {
+      const entry = category.entries[entryIndex];
+
+      if (categoryIndex !== 0 || entryIndex !== 0) {
+        content += `####Entry:${entry.name}####${lineBreak}`
+      }
       content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}`
     }
   }
@@ -115,18 +109,19 @@ export function convertFileToHosts(content: string): Hosts {
     .split('\n');
 
   const hosts: Hosts = {
-    main: {
-      name: 'Main',
-      value: '',
-      active: false
-    },
-    entries: [],
-    categories: [],
+    categories: [{
+      name: 'Default',
+      entries: [{
+        name: 'Main',
+        value: '',
+        active: false
+      }]
+    }],
     readonly: false
   }
 
-  let currentCategory: HostsCategory | null = null;
-  let currentEntry: HostsEntry = hosts.main;
+  let currentCategory: HostsCategory  = hosts.categories[0];
+  let currentEntry: HostsEntry = currentCategory.entries[0];
 
   for (const line of lines) {
     const startOfCategory = line.match(startOfCategoryBlock);
@@ -144,11 +139,7 @@ export function convertFileToHosts(content: string): Hosts {
         value: '',
         active: false
       }
-      if (currentCategory === null) {
-        hosts.entries.push(currentEntry);
-      } else {
-        currentCategory.entries.push(currentEntry)
-      }
+      currentCategory.entries.push(currentEntry)
     } else {
       if (currentEntry.value.length === 0) {
         currentEntry.value = line
@@ -159,11 +150,6 @@ export function convertFileToHosts(content: string): Hosts {
   }
 
   // Set the active flag on all of the entries
-  hosts.main.active = isEntryActive(hosts.main);
-  if (!hosts.main.active) {
-    hosts.main.value = formatEntryValueForObject(hosts.main);
-  }
-
   for (const category of hosts.categories) {
     for (const entry of category.entries) {
       entry.active = isEntryActive(entry);

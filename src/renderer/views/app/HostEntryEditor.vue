@@ -33,6 +33,7 @@
           button-text="Delete"
           content="Are you sure you want to delete this entry?"
           :disabled="!changed"
+          @click="onDelete"
         />
         <v-btn
           v-if="!adding"
@@ -142,6 +143,10 @@
 
     protected onCancelAdding(): void {
       this.$emit('cancel-adding');
+    }
+
+    protected onDelete(): void {
+      this.$emit('deleted');
     }
 
     protected onChange(): void {

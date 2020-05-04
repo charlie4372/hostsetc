@@ -3,87 +3,73 @@
     permanent
   >
     <v-list dense>
-      <hosts-entry-drawer-item
-        name="Main"
-        :entry="hosts.main"
-        @click="onEntryClick(null, hosts.main)"
-      />
-      <hosts-entry-drawer-item
-        v-for="(entry, entryIndex) in hosts.entries"
-        :key="entryIndex"
-        :entry="entry"
-        @click="onEntryClick(null, entry)"
-        @activate="onActivate(entry, $event)"
-      />
-      <v-list-item link>
-        <v-list-item-action>
-          <v-icon>mdi-contact-mail</v-icon>
-        </v-list-item-action>
-        <v-list-item-content>
-          <v-list-item-title
-            class="text--secondary"
-            @click="onAddEntry(null)"
-          >
-            New entry
-          </v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-
-      <div
-        v-for="(category, categoryIndex) in hosts.categories"
-        :key="categoryIndex"
+      <v-list-item-group
+        :value="selectedItem"
       >
-        <hosts-category-drawer-item
-          :category="category"
-          @click="onCategoryClick(category)"
-        />
-        <hosts-entry-drawer-item
-          v-for="(entry, entryIndex) in category.entries"
-          :key="entryIndex"
-          :entry="entry"
-          @click="onEntryClick(category, entry)"
-          @activate="onActivate(entry, $event)"
-        />
+        <div
+          v-for="(category, categoryIndex) in hosts.categories"
+          :key="getKey(categoryIndex, 0, 'group')"
+        >
+          <v-list-item
+            v-if="categoryIndex !== 0"
+            :key="getKey(categoryIndex, 0, 'view-category')"
+            :value="getKey(categoryIndex, 0, 'view-category')"
+            link
+          >
+            <v-list-item-content>
+              <v-list-item-title>{{ category.name }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-list-item
+            v-for="(entry, entryIndex) in category.entries"
+            :key="getKey(categoryIndex, entryIndex, 'view-entry')"
+            :value="getKey(categoryIndex, entryIndex, 'view-entry')"
+            link
+            @click="onClickEntry(categoryIndex, entryIndex)"
+          >
+            <v-list-item-content>
+              <v-list-item-title>{{ entry.name }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-list-item
+            :key="getKey(categoryIndex, 0, 'add-entry')"
+            :value="getKey(categoryIndex, 0, 'add-entry')"
+            link
+            @click="onAddEntry(categoryIndex)"
+          >
+            <v-list-item-content>
+              <v-list-item-title class="text--secondary">
+                New entry
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </div>
+
         <v-list-item
+          :key="getKey(0, 0, 'add-category')"
+          :value="getKey(0, 0, 'add-category')"
           link
         >
-          <v-list-item-action>
-            <v-icon>mdi-contact-mail</v-icon>
-          </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title
               class="text--secondary"
-              @click="onAddEntry(category)"
             >
-              New entry
+              New category
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-      </div>
-      <v-list-item
-        link
-      >
-        <v-list-item-content>
-          <v-list-item-title
-            class="text--secondary"
-            @click="onAddCategory"
-          >
-            New category
-          </v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
 
-      <v-list-item
-        link
-      >
-        <v-list-item-content>
-          <v-list-item-title
-            @click="onViewFile"
-          >
-            Hosts File
-          </v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
+        <v-list-item
+          link
+          @click="$emit('view-hosts-file')"
+        >
+          <v-list-item-content>
+            <v-list-item-title>Hosts File</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list-item-group>
     </v-list>
 
     <template v-slot:append>
@@ -120,52 +106,70 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import HostsEntryDrawerItem from '@renderer/components/navigation-drawer/HostsEntryDrawerItem.vue';
-  import HostsCategoryDrawerItem from '@renderer/components/navigation-drawer/HostsCategoryDrawerItem.vue';
-  import {Hosts, HostsCategory, HostsEntry} from "@common/hosts";
-  import {Prop} from "vue-property-decorator";
+  import {Hosts} from "@common/hosts";
+  import {Prop, Watch} from "vue-property-decorator";
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
+  import {NavigationDrawAction, NavigationDrawSelection} from './types';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
-      ConfirmButton,
-      HostsEntryDrawerItem,
-      HostsCategoryDrawerItem
+      ConfirmButton
     }
   })
-  export default class  extends Vue {
+  export default class AppNavigationDrawer extends Vue {
     @Prop({ type: Object, required: true })
     public readonly hosts!: Hosts;
+
+    @Prop({ type: Number })
+    public readonly currentCategoryIndex!: number;
+
+    @Prop({ type: Number })
+    public readonly currentEntryIndex!: number;
+
+    @Prop({ type: String })
+    public readonly currentAction!: string;
 
     @Prop({ type: Boolean })
     public readonly changed!: boolean;
 
-    protected onCategoryClick(category: HostsCategory): void {
-      this.$emit('select-category', category);
+    protected selectedItem = '';
+
+    public created(): void {
+      this.selectedItem = this.getKey(this.currentCategoryIndex, this.currentEntryIndex, this.currentAction);
     }
 
-    protected onEntryClick(category: HostsCategory | null, entry: HostsEntry | null): void {
-      this.$emit('select-entry', { category, entry });
+    @Watch('currentCategoryIndex')
+    protected onCurrentCategoryIndexChanged(newValue: number | null): void {
+      this.selectedItem = this.getKey(newValue, this.currentEntryIndex, this.currentAction);
     }
 
-    protected onAddCategory(): void {
-      this.$emit('add-category');
+    @Watch('currentEntryIndex')
+    protected onCurrentEntryIndexChanged(newValue: number | null): void {
+      this.selectedItem = this.getKey(this.currentCategoryIndex, newValue, this.currentAction);
     }
 
-    protected onAddEntry(category: HostsCategory | null): void {
-      this.$emit('add-entry', category);
+    @Watch('currentAction')
+    protected onCurrentActionChanged(newValue: NavigationDrawAction): void {
+      this.selectedItem = this.getKey(this.currentCategoryIndex, this.currentEntryIndex, newValue);
     }
 
-    protected onViewFile(): void {
-      this.$emit('view-file');
+    protected getKey(categoryIndex: number | null, entryIndex: number | null, action: NavigationDrawAction | string): string {
+      return `category${categoryIndex}_entry-${entryIndex}_action-${action}`;
     }
 
-    protected onActivate(entry: HostsEntry, activate: boolean): void {
-      this.$emit('update', {
-        ...entry,
-        active: activate
-      });
+    protected onClickEntry(categoryIndex: number, entryIndex: number): void {
+      this.$emit('view-entry', {
+        categoryIndex,
+        entryIndex
+      } as NavigationDrawSelection);
+    }
+
+    protected onAddEntry(categoryIndex: number): void {
+      this.$emit('add-entry', {
+        categoryIndex,
+        entryIndex: 0
+      } as NavigationDrawSelection);
     }
   }
 </script>

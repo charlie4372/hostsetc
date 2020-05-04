@@ -4,7 +4,10 @@
     persistent
     max-width="290"
   >
-    <template v-slot:activator="{ on }">
+    <template
+      v-if="buttonVisible"
+      v-slot:activator="{ on }"
+    >
       <v-btn
         :color="buttonColor"
         :block="buttonBlock"
@@ -44,7 +47,7 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import { Prop } from 'vue-property-decorator';
+  import { Prop, Watch } from 'vue-property-decorator';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -54,7 +57,10 @@
   export default class ConfirmButton extends Vue {
     protected visible = false;
 
-    @Prop({type: String, required: true })
+    @Prop({type: Boolean, default: true })
+    public readonly buttonVisible!: boolean;
+
+    @Prop({type: String, default: 'Confirm' })
     public readonly buttonText!: string;
 
     @Prop({type: String })
@@ -77,6 +83,20 @@
 
     @Prop({type: String, default: 'Cancel'})
     public readonly cancelText!: string;
+
+    @Prop({type: Boolean })
+    public readonly value!: boolean;
+
+    public constructor() {
+      super();
+
+      this.visible = this.value;
+    }
+
+    @Watch('value')
+    protected onValueChanged(newValue: boolean): void {
+      this.visible = newValue;
+    }
 
     protected onClose(confirmed: boolean): void {
       if (confirmed) {
