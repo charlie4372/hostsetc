@@ -28,16 +28,8 @@ export class HostsFile {
   public load(path?: string): void {
     const hostsPath = path && fs.existsSync(path) ? path : this.getHostsPath();
     if (hostsPath === null) {
-      this.hosts = {
-        main: {
-          name: 'Main',
-          value: '# The hosts file could not be found.',
-          active: false
-        },
-        entries: [],
-        categories: [],
-        readonly: true
-      }
+      this.hosts = convertFileToHosts('# The hosts file could not be found.');
+      this.hosts.readonly = true;
       return;
     }
 

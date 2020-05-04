@@ -1,0 +1,10 @@
+appId: 'com.hosted-editor'
+
+win:
+  target: [
+    portable,
+    nsis
+  ]
+
+  requestedExecutionLevel: highestAvailable
+

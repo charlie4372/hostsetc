@@ -108,7 +108,6 @@
   import {HostsFile} from "@common/hosts-file/HostsFile";
   import HostCategoryEditor from "@renderer/views/app/HostCategoryEditor.vue";
   import AppNavigationDrawer from "@renderer/views/app/AppNavigationDrawer.vue";
-  import sampleData from "@renderer/views/app/SampleData";
   import HostFileEditor from "@renderer/views/app/HostFileEditor.vue";
   import {NavigationDrawAction, NavigationDrawSelection} from './app/types';
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
@@ -124,12 +123,10 @@
     }
   })
   export default class App extends Vue {
-    private sampleData: Hosts = sampleData;
-
     protected currentAction: NavigationDrawAction = 'view-entry';
     protected currentCategoryIndex = 0;
     protected currentEntryIndex = 0;
-    protected hosts: Hosts = this.sampleData;
+    protected hosts!: Hosts;
     protected hostsFile: HostsFile = new HostsFile();
     protected hostsContent = '';
     protected changed = false;
@@ -149,11 +146,13 @@
     public constructor() {
       super();
 
+      this.hostsFile.load();
+      this.hosts = this.hostsFile.hosts;
+
       // The TS defaults kick in after the constructor.
       // But if they're not there, then they don't register with vue.
       this.$nextTick(() => {
-        this.hostsFile.hosts = this.sampleData;
-        this.hosts = this.sampleData;
+        this.hosts = this.hostsFile.hosts;
         this.viewEntry(0, 0);
       });
     }
