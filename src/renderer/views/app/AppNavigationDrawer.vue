@@ -32,6 +32,12 @@
             <v-list-item-content>
               <v-list-item-title>{{ entry.name }}</v-list-item-title>
             </v-list-item-content>
+            <v-list-item-action>
+              <v-switch
+                :input-value="entry.active"
+                @change="onToggleEntryActive(categoryIndex, entryIndex)"
+              />
+            </v-list-item-action>
           </v-list-item>
 
           <v-list-item
@@ -183,6 +189,13 @@
 
     protected onAddCategory(): void {
       this.$emit('add-category');
+    }
+
+    protected onToggleEntryActive(categoryIndex: number, entryIndex: number): void {
+      this.$emit('toggle-entry-active', {
+        categoryIndex,
+        entryIndex
+      } as NavigationDrawSelection);
     }
   }
 </script>

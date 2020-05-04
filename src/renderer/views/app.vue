@@ -19,6 +19,7 @@
           :current-action="currentAction"
           @view-entry="onViewEntry"
           @add-entry="onAddEntry"
+          @toggle-entry-active="onToggleEntryActive"
           @view-category="onViewCategory"
           @add-category="onAddCategory"
           @view-hosts-file="onViewHostsFile"
@@ -171,6 +172,11 @@
 
     protected onViewEntry(value: NavigationDrawSelection): void {
       this.viewEntry(value.categoryIndex, value.entryIndex);
+    }
+
+    protected onToggleEntryActive(value: NavigationDrawSelection): void {
+      this.hosts.categories[value.categoryIndex].entries[value.entryIndex].active = !this.hosts.categories[value.categoryIndex].entries[value.entryIndex].active;
+      this.changed = true;
     }
 
     protected onAddEntry(value: NavigationDrawSelection): void {
