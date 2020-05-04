@@ -164,6 +164,8 @@
       this.hosts = this.hostsFile.hosts;
       this.viewEntry(0, 0);
       this.changed = false;
+
+      this.showNotification('success', 'Reloaded hosts file.');
     }
 
     protected onSave(): void {
@@ -172,10 +174,10 @@
       try {
         this.hostsFile.save();
 
-        this.showNotification('success', 'Saved');
+        this.showNotification('success', 'Saved hosts file.');
       } catch (e) {
         console.log(e);
-        this.showNotification('error', 'Save failed');
+        this.showNotification('error', 'Failed to save hosts file.');
       }
     }
 
