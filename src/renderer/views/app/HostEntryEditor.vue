@@ -139,6 +139,7 @@
         name: this.internalName || undefined,
         value: this.$refs.textEditor.getContent()
       })
+      this.changed = false;
     }
 
     protected onCancelAdding(): void {

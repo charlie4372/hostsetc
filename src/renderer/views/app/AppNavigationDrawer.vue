@@ -15,9 +15,10 @@
             :key="getKey(categoryIndex, 0, 'view-category')"
             :value="getKey(categoryIndex, 0, 'view-category')"
             link
+            @click="onViewCategory(categoryIndex)"
           >
             <v-list-item-content>
-              <v-list-item-title>{{ category.name }}</v-list-item-title>
+              <v-list-item-title class="title">{{ category.name }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
 
@@ -26,7 +27,7 @@
             :key="getKey(categoryIndex, entryIndex, 'view-entry')"
             :value="getKey(categoryIndex, entryIndex, 'view-entry')"
             link
-            @click="onClickEntry(categoryIndex, entryIndex)"
+            @click="onViewEntry(categoryIndex, entryIndex)"
           >
             <v-list-item-content>
               <v-list-item-title>{{ entry.name }}</v-list-item-title>
@@ -51,6 +52,7 @@
           :key="getKey(0, 0, 'add-category')"
           :value="getKey(0, 0, 'add-category')"
           link
+          @click="onAddCategory"
         >
           <v-list-item-content>
             <v-list-item-title
@@ -66,7 +68,7 @@
           @click="$emit('view-hosts-file')"
         >
           <v-list-item-content>
-            <v-list-item-title>Hosts File</v-list-item-title>
+            <v-list-item-title class="title">Hosts File</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list-item-group>
@@ -158,10 +160,17 @@
       return `category${categoryIndex}_entry-${entryIndex}_action-${action}`;
     }
 
-    protected onClickEntry(categoryIndex: number, entryIndex: number): void {
+    protected onViewEntry(categoryIndex: number, entryIndex: number): void {
       this.$emit('view-entry', {
         categoryIndex,
         entryIndex
+      } as NavigationDrawSelection);
+    }
+
+    protected onViewCategory(categoryIndex: number): void {
+      this.$emit('view-category', {
+        categoryIndex,
+        entryIndex: 0
       } as NavigationDrawSelection);
     }
 
@@ -170,6 +179,10 @@
         categoryIndex,
         entryIndex: 0
       } as NavigationDrawSelection);
+    }
+
+    protected onAddCategory(): void {
+      this.$emit('add-category');
     }
   }
 </script>

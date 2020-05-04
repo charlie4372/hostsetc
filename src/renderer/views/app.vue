@@ -19,6 +19,8 @@
           :current-action="currentAction"
           @view-entry="onViewEntry"
           @add-entry="onAddEntry"
+          @view-category="onViewCategory"
+          @add-category="onAddCategory"
           @view-hosts-file="onViewHostsFile"
         />
         <v-container
@@ -49,8 +51,19 @@
 
           <host-category-editor
             v-else-if="currentAction === 'view-category'"
-            class="w-100 h-100 d-flex flex-column"
+            class="w-100 d-flex flex-column"
             :category="currentCategory"
+            :can-delete="currentCategoryIndex !== 0"
+            @updated="onCategoryUpdated"
+            @deleted="onCategoryDeleted"
+          />
+
+          <host-category-editor
+            v-else-if="currentAction === 'add-category'"
+            class="w-100 d-flex flex-column"
+            :adding="true"
+            @updated="onCategoryAdded"
+            @cancel-adding="onCategoryCancelAdding"
           />
 
           <host-file-editor
@@ -175,6 +188,49 @@
 
     protected onEntryCancelAdding(): void {
       this.viewEntry(this.currentEntryIndex, 0);
+    }
+
+    protected onViewCategory(value: NavigationDrawSelection): void {
+      this.currentAction = 'view-category';
+      this.$nextTick(() => {
+        this.currentCategoryIndex = value.categoryIndex;
+        this.currentEntryIndex = value.entryIndex;
+      });
+    }
+
+    protected onCategoryUpdated(value: HostsCategory): void {
+      this.currentCategory.name = value.name;
+      this.changed = true;
+    }
+
+    protected onAddCategory(): void {
+      this.currentAction = 'add-category';
+      this.$nextTick(() => {
+        this.currentCategoryIndex = 0;
+        this.currentEntryIndex = 0;
+      });
+    }
+
+    protected onCategoryAdded(value: HostsCategory): void {
+      if (value.entries.length === 0) {
+        value.entries.push({
+          name: 'Default',
+          value: '127.0.0.1 localhost',
+          active: false
+        });
+      }
+      this.hosts.categories.push(value);
+
+      this.viewEntry(this.hosts.categories.length - 1, 0);
+    }
+
+    protected onCategoryDeleted(): void {
+      this.hosts.categories.splice(this.currentCategoryIndex, 1);
+      this.currentEntryIndex--;
+    }
+
+    protected onCategoryCancelAdding(): void {
+      this.viewEntry(0, 0);
     }
 
     // protected startAddingEntry(categoryIndex: number | null): void {
