@@ -77,6 +77,17 @@
             :hosts-path="hostsFile.path"
             @updated="onUpdateHostsFile"
           />
+
+          <v-snackbar
+            v-model="notificationVisible"
+            bottom
+            right
+            multi-line
+            :color="notificationColor"
+            :timeout="3000"
+          >
+            {{ notificationText }}
+          </v-snackbar>
         </v-container>
       </div>
     </v-content>
@@ -123,6 +134,10 @@
     protected hostsContent = '';
     protected changed = false;
 
+    protected notificationVisible = false;
+    protected notificationText = '';
+    protected notificationColor = 'success';
+
     protected get currentCategory(): HostsCategory {
       return this.hosts.categories[this.currentCategoryIndex];
     }
@@ -156,9 +171,20 @@
 
       try {
         this.hostsFile.save();
-      } catch (e) {
 
+        this.showNotification('success', 'Saved');
+      } catch (e) {
+        console.log(e);
+        this.showNotification('error', 'Save failed');
       }
+    }
+
+    protected showNotification(color: string, text: string): void {
+      this.$nextTick(() => {
+        this.notificationText = text;
+        this.notificationColor = color;
+        this.notificationVisible = true;
+      });
     }
 
     protected onEntryUpdated(entry: HostsEntry): void {
