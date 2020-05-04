@@ -46,7 +46,7 @@ export class HostsFile {
     this.hosts = convertFileToHosts(content);
   }
 
-  public Save(): void {
+  public save(): void {
     const hostsPath = this.getHostsPath();
     if (hostsPath === null) {
       throw new Error('Hosts file not found.');

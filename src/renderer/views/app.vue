@@ -23,6 +23,8 @@
           @view-category="onViewCategory"
           @add-category="onAddCategory"
           @view-hosts-file="onViewHostsFile"
+          @reload="onReload"
+          @save="onSave"
         />
         <v-container
           class="fill-height align-start justify-start flex-column app-container"
@@ -147,6 +149,16 @@
       this.hosts = this.hostsFile.hosts;
       this.viewEntry(0, 0);
       this.changed = false;
+    }
+
+    protected onSave(): void {
+      this.hostsFile.hosts = this.hosts;
+
+      try {
+        this.hostsFile.save();
+      } catch (e) {
+
+      }
     }
 
     protected onEntryUpdated(entry: HostsEntry): void {

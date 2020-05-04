@@ -54,20 +54,25 @@
               </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
+
+          <v-list-item
+            v-if="categoryIndex === 0"
+            :key="getKey(0, 0, 'add-category')"
+            :value="getKey(0, 0, 'add-category')"
+            link
+            @click="onAddCategory"
+          >
+            <v-list-item-content>
+              <v-list-item-title class="text--secondary">
+                New category
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-divider />
         </div>
 
-        <v-list-item
-          :key="getKey(0, 0, 'add-category')"
-          :value="getKey(0, 0, 'add-category')"
-          link
-          @click="onAddCategory"
-        >
-          <v-list-item-content>
-            <v-list-item-title class="text--secondary">
-              New category
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+        <v-divider />
 
         <v-list-item
           link
@@ -106,6 +111,7 @@
             button-color="primary"
             button-text="Save"
             content="This will update your hosts file."
+            @click="$emit('save')"
           />
         </div>
       </div>
