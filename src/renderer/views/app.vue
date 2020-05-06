@@ -34,48 +34,28 @@
             v-if="currentAction === 'view-entry'"
             class="w-100 h-100 d-flex flex-column"
             :category="currentCategory"
-            :entry="currentEntry"
             :name-readonly="currentEntryIndex === 0 && currentCategoryIndex === 0"
-            :readonly="hosts.readonly"
-            :can-delete="currentEntryIndex !== 0"
-            @updated="onEntryUpdated"
-            @deleted="onEntryDeleted"
-          />
-
-          <host-entry-editor
-            v-else-if="currentAction === 'add-entry'"
-            class="w-100 h-100 d-flex flex-column"
-            :category="currentCategory"
-            :adding="true"
-            :show-name="true"
-            @updated="onEntryAdded"
-            @cancel-adding="onEntryCancelAdding"
+            :can-delete="currentCategory.entries.length > 1"
+            :value="currentEntry"
+            @input="onUpdateEntry"
+            @deleted="onDeleteEntry"
           />
 
           <host-category-editor
             v-else-if="currentAction === 'view-category'"
             class="w-100 d-flex flex-column"
-            :category="currentCategory"
             :can-delete="currentCategoryIndex !== 0"
-            @updated="onCategoryUpdated"
-            @deleted="onCategoryDeleted"
-          />
-
-          <host-category-editor
-            v-else-if="currentAction === 'add-category'"
-            class="w-100 d-flex flex-column"
-            :adding="true"
-            @updated="onCategoryAdded"
-            @cancel-adding="onCategoryCancelAdding"
+            :value="currentCategory"
+            @input="onUpdateCategory"
+            @deleted="onDeleteCategory"
           />
 
           <host-file-editor
             v-else-if="currentAction === 'view-file'"
             class="w-100 h-100 d-flex flex-column"
-            :content="hostsContent"
-            :readonly="hosts.readonly"
             :hosts-path="hostsFile.path"
-            @updated="onUpdateHostsFile"
+            :value="hostsContent"
+            @input="onUpdateHostsFile"
           />
 
           <v-snackbar
@@ -172,7 +152,7 @@
 
       try {
         this.hostsFile.save();
-
+        this.changed = false;
         this.showNotification('success', 'Saved hosts file.');
       } catch (e) {
         console.log(e);
@@ -188,17 +168,10 @@
       });
     }
 
-    protected onEntryUpdated(entry: HostsEntry): void {
+    protected onUpdateEntry(entry: HostsEntry): void {
       this.currentEntry.name = entry.name;
       this.currentEntry.value = entry.value;
       this.currentEntry.active = entry.active;
-      this.changed = true;
-    }
-
-    protected onEntryAdded(entry: HostsEntry): void {
-      this.currentCategory.entries.push(entry);
-      this.viewEntry(this.currentCategoryIndex, this.currentCategory.entries.length - 1);
-      this.changed = true;
     }
 
     protected viewEntry(categoryIndex: number, entryIndex: number): void {
@@ -219,92 +192,71 @@
     }
 
     protected onAddEntry(value: NavigationDrawSelection): void {
-      this.currentAction = 'add-entry';
+      this.hosts.categories[value.categoryIndex].entries.push({
+        active: false,
+        name: 'New',
+        value: ''
+      });
+      this.changed = true;
+
+      this.viewEntry(value.categoryIndex, this.currentCategory.entries.length - 1);
+    }
+
+    protected onDeleteEntry(): void {
+      const entryIndexToDelete = this.currentEntryIndex;
+
+      if (this.currentEntryIndex === this.currentCategory.entries.length - 1) {
+        this.viewEntry(this.currentCategoryIndex, this.currentEntryIndex - 1);
+      }
       this.$nextTick(() => {
-        this.currentCategoryIndex = value.categoryIndex;
-        this.currentEntryIndex = value.entryIndex;
+        this.currentCategory.entries.splice(entryIndexToDelete, 1);
+        this.changed = true;
       });
     }
 
-    protected onEntryDeleted(): void {
-      this.currentCategory.entries.splice(this.currentEntryIndex, 1);
-      this.currentEntryIndex--;
-    }
-
-    protected onEntryCancelAdding(): void {
-      this.viewEntry(this.currentEntryIndex, 0);
+    protected viewCategory(categoryIndex: number): void {
+      this.currentAction = 'view-category';
+      this.$nextTick(() => {
+        this.currentCategoryIndex = categoryIndex;
+        this.currentEntryIndex = 0;
+      });
     }
 
     protected onViewCategory(value: NavigationDrawSelection): void {
-      this.currentAction = 'view-category';
-      this.$nextTick(() => {
-        this.currentCategoryIndex = value.categoryIndex;
-        this.currentEntryIndex = value.entryIndex;
-      });
+      this.viewCategory(value.categoryIndex);
     }
 
-    protected onCategoryUpdated(value: HostsCategory): void {
+    protected onUpdateCategory(value: HostsCategory): void {
       this.currentCategory.name = value.name;
       this.changed = true;
     }
 
     protected onAddCategory(): void {
-      this.currentAction = 'add-category';
+      this.hosts.categories.push({
+        name: 'New',
+        entries: [
+          {
+            active: false,
+            value: '',
+            name: 'Default'
+          }
+        ]
+      });
+
+      this.viewCategory(this.hosts.categories.length - 1);
+    }
+
+    protected onDeleteCategory(): void {
+      const categoryIndexToDelete = this.currentCategoryIndex;
+
+      if (this.currentCategoryIndex === this.hosts.categories.length - 1) {
+        this.viewCategory(this.currentCategoryIndex - 1);
+      }
       this.$nextTick(() => {
-        this.currentCategoryIndex = 0;
-        this.currentEntryIndex = 0;
+        this.hosts.categories.splice(categoryIndexToDelete, 1);
+        this.changed = true;
       });
     }
-
-    protected onCategoryAdded(value: HostsCategory): void {
-      if (value.entries.length === 0) {
-        value.entries.push({
-          name: 'Default',
-          value: '127.0.0.1 localhost',
-          active: false
-        });
-      }
-      this.hosts.categories.push(value);
-
-      this.viewEntry(this.hosts.categories.length - 1, 0);
-    }
-
-    protected onCategoryDeleted(): void {
-      this.hosts.categories.splice(this.currentCategoryIndex, 1);
-      this.currentEntryIndex--;
-    }
-
-    protected onCategoryCancelAdding(): void {
-      this.viewEntry(0, 0);
-    }
-
-    // protected startAddingEntry(categoryIndex: number | null): void {
-    //   this.mode = 'add-entry';
-    //   this.$nextTick(() => {
-    //     this.selectEntry(categoryIndex, null);
-    //   });
-    // }
-
-    // protected addEntry(entry: HostsEntry): void {
-    //   this.currentCategory.entries.push(entry);
-    //   this.selectEntry(this.currentCategoryIndex, this.hosts.entries.length - 1);
-    // }
-
-    // protected updateCategory(category: HostsCategory): void {
-    //   if (this.currentCategory === null) {
-    //     // TODO handle the error
-    //     throw new Error('currentCategory is not set.')
-    //   }
-    //   this.currentCategory.name = category.name;
-    //   this.changed = true;
-    // }
-
-    // protected onCancelAdding(): void {
-    //   this.mode = 'view-entry';
-    //   this.$nextTick(() => {
-    //     this.selectEntry(null, 0);
-    //   });
-    // }
 
     protected onViewHostsFile(): void {
       this.currentAction = 'view-file';
@@ -316,10 +268,6 @@
     protected onUpdateHostsFile(content: string): void {
       this.hosts = convertFileToHosts(content);
       this.changed = true;
-
-      this.$nextTick(() => {
-        this.hostsContent = convertHostsToFile(this.hosts);
-      });
     }
   }
 </script>

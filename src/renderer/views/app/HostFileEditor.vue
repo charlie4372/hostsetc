@@ -11,25 +11,9 @@
         ref="textEditor"
         class="flex-grow-1 host-entry-editor__text"
         label="Content"
-        :readonly="readonly"
-        :content="content"
-        @change="onChanged"
+        :value="value"
+        @input="onUpdateEditor"
       />
-      <div class="align-self-end mt-4">
-        <v-btn
-          :disabled="!changed"
-          @click="onRevert"
-        >
-          Revert
-        </v-btn>
-        <v-btn
-          color="primary"
-          :disabled="!changed"
-          @click="onUpdate"
-        >
-          Update
-        </v-btn>
-      </div>
     </v-card-text>
   </v-card>
 </template>
@@ -37,7 +21,7 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import { Prop, Watch } from 'vue-property-decorator';
+  import { Prop } from 'vue-property-decorator';
   import TextEditorInput from '@renderer/components/editors/TextEditorInput.vue';
 
   // The @Component decorator indicates the class is a Vue component
@@ -52,36 +36,15 @@
     }
 
     @Prop({type: String})
-    public readonly content!: string;
+    public readonly value!: string;
 
     @Prop({type: String})
     public readonly hostsPath!: string;
 
-    @Prop({type: Boolean})
-    public readonly readonly!: boolean
-
-    protected changed = false;
-
-    @Watch('content')
-    protected onContentChanged(newValue: string): void {
-      if (newValue) {
-        this.changed = false;
-      }
-    }
-
-    protected onRevert(): void {
-      this.$refs.textEditor.revert();
-      this.changed = false;
-    }
-
-    protected onUpdate(): void {
-      this.$emit('updated',
-        this.$refs.textEditor.getContent()
+    protected onUpdateEditor(value: string): void {
+      this.$emit('input',
+        value
       )
-    }
-
-    protected onChanged(): void {
-      this.changed = true;
     }
   }
 </script>

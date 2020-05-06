@@ -2,8 +2,8 @@
   <div
     ref="editableDiv"
     class="text-editor-input"
-    :contenteditable="readonly ? 'false' : 'true'"
-    @keydown="$emit('change')"
+    contenteditable="true"
+    @blur="onChange"
   />
 </template>
 
@@ -25,30 +25,23 @@
       editableDiv: HTMLElement;
     }
 
-    @Prop({type: Boolean})
-    public readonly readonly!: boolean
+    @Prop({type: String})
+    public readonly value!: string | null | undefined;
 
     @Prop({type: String})
-    public readonly content!: string | null;
-
-    @Prop({type: String})
-    public readonly label!: string | null;
+    public readonly label!: string | null | undefined;
 
     protected mounted(): void {
-      this.$refs.editableDiv.innerHTML = htmlEncode.encodeTextFileToHtml(this.content || '');
+      this.$refs.editableDiv.innerHTML = htmlEncode.encodeTextFileToHtml(this.value || '');
     }
 
-    @Watch('content')
+    @Watch('value')
     protected onContentChange(newValue: string | null): void {
       this.$refs.editableDiv.innerHTML = htmlEncode.encodeTextFileToHtml(newValue || '');
     }
 
-    public getContent(): string {
-      return htmlEncode.decodeHtmlToTextFile(this.$refs.editableDiv.innerHTML)
-    }
-
-    public revert(): void {
-      this.$refs.editableDiv.innerHTML = htmlEncode.encodeTextFileToHtml(this.content || '');
+    protected onChange(): void {
+      this.$emit('input', htmlEncode.decodeHtmlToTextFile(this.$refs.editableDiv.innerHTML));
     }
   }
 </script>

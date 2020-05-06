@@ -1,6 +1,6 @@
 {
-  "name": "hosted-editor",
-  "version": "0.0.2",
+  "name": "hosts-file-editor",
+  "version": "0.0.3",
   "license": "MIT",
   "author": "Charlie Broad",
   "scripts": {

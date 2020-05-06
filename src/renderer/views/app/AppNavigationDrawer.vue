@@ -92,13 +92,6 @@
         <div>
           <v-btn
             block
-          >
-            Flush DNS
-          </v-btn>
-        </div>
-        <div>
-          <v-btn
-            block
             @click="$emit('reload')"
           >
             Reload
