@@ -47,7 +47,32 @@
 </script>
 
 <style scoped lang="scss">
+  @import "~vuetify/src/styles/settings/colors";
+
   .text-editor-input {
     outline: none;
+    font-family: "Roboto Mono", monospace;
+    overflow: auto;
+    white-space: nowrap;
+  }
+
+  .text-editor-input::-webkit-scrollbar-track
+  {
+    // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border-radius: 10px;
+    background-color: #fff;
+  }
+
+  .text-editor-input::-webkit-scrollbar
+  {
+    width: 12px;
+    background-color: map_get($grey, 'lighten-4');
+  }
+
+  .text-editor-input::-webkit-scrollbar-thumb
+  {
+    border-radius: 10px;
+    // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background-color: map_get($grey, 'lighten-2');
   }
 </style>

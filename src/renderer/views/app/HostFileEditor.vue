@@ -6,7 +6,7 @@
     <v-card-subtitle>
       {{ hostsPath }}
     </v-card-subtitle>
-    <v-card-text class="d-flex flex-column h-100">
+    <v-card-text class="d-flex flex-column host-file-editor__content">
       <text-editor-input
         ref="textEditor"
         class="flex-grow-1 host-entry-editor__text"
@@ -50,7 +50,9 @@
 </script>
 
 <style scoped lang="scss">
-  .host-entry-editor__text {
-    font-family: "Roboto Mono", monospace;
+  .host-file-editor {
+    &__content {
+      height: calc(100% - 5.5rem);
+    }
   }
 </style>

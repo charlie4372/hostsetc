@@ -1,4 +1,7 @@
 import fs from 'fs';
+import os from 'os';
+import winattr from 'winattr';
+
 import {
   Hosts,
   convertHostsToFile, convertFileToHosts
@@ -6,18 +9,23 @@ import {
 import process from 'process';
 
 export class HostsFile {
-  private _hostsFilePaths: string[] = [
-    '%SystemRoot%\\system32\\drivers\\etc\\hosts',
-    '/etc/hosts'
-  ]
+  private readonly _hostsFilePaths: string[];
 
   private _resolvedHostsFilePath: string | undefined;
-
-  private lineBreak = '\r\n';
 
   public hosts!: Hosts;
 
   public constructor() {
+    if (process.platform === 'win32') {
+      this._hostsFilePaths = [
+        '%SystemRoot%\\system32\\drivers\\etc\\hosts'
+      ]
+    } else {
+      this._hostsFilePaths = [
+        '/etc/hosts'
+      ]
+    }
+
     this.load();
   }
 
@@ -47,14 +55,24 @@ export class HostsFile {
     const backupPath = hostsPath + '.bak';
 
     if (fs.existsSync(backupPath)) {
+      this.setReadOnlyWin32(backupPath, false);
       fs.unlinkSync(backupPath);
     }
 
     fs.copyFileSync(hostsPath, backupPath);
 
-    const content = convertHostsToFile(this.hosts, this.lineBreak);
+    const content = convertHostsToFile(this.hosts, os.EOL);
+
+    const isReadonly = this.isReadOnlyWin32(hostsPath);
+    if (isReadonly) {
+      this.setReadOnlyWin32(hostsPath, false);
+    }
 
     fs.writeFileSync(hostsPath, content);
+
+    if (isReadonly) {
+      this.setReadOnlyWin32(hostsPath, true);
+    }
   }
 
   private getHostsPath(): string | null {
@@ -72,5 +90,21 @@ export class HostsFile {
     }
 
     return null;
+  }
+
+  private isReadOnlyWin32(path: string): boolean {
+    if (process.platform === 'win32') {
+      return winattr.getSync(path).readonly;
+    }
+
+    return false;
+  }
+
+  private setReadOnlyWin32(path: string, isReadonly: boolean): void {
+    if (process.platform !== 'win32') {
+      return;
+    }
+
+    winattr.setSync(path, { readonly: isReadonly });
   }
 }

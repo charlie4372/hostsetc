@@ -9,7 +9,9 @@
       <v-toolbar-title>Host File Editor</v-toolbar-title>
     </v-app-bar>
 
-    <v-content>
+    <v-content
+      class="app__content"
+    >
       <div class="d-flex h-100">
         <app-navigation-drawer
           :hosts="hosts"
@@ -27,7 +29,7 @@
           @save="onSave"
         />
         <v-container
-          class="fill-height align-start justify-start flex-column app-container"
+          class="fill-height align-start justify-start flex-column app__container"
           fluid
         >
           <host-entry-editor
@@ -273,7 +275,16 @@
 </script>
 
 <style scoped lang="scss">
-  .app-container {
-    background-color: #ddd;
+  @import "~vuetify/src/styles/settings/colors";
+
+  .app {
+    &__content {
+      height: 100vh;
+    }
+
+    &__container {
+      background-color: map_get($grey, 'lighten-1');
+      max-width: calc(100vw - 15rem);
+    }
   }
 </style>

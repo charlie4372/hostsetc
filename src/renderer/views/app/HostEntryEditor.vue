@@ -3,7 +3,7 @@
     <v-card-title v-if="category && category.name">
       {{ category.name }}
     </v-card-title>
-    <v-card-text class="h-100 d-flex flex-column">
+    <v-card-text class="host-entry-editor__content d-flex flex-column">
       <div>
         <v-text-field
           :value="value ? value.name : ''"
@@ -81,7 +81,9 @@
 </script>
 
 <style scoped lang="scss">
-  .host-entry-editor__text {
-    font-family: "Roboto Mono", monospace;
+  .host-entry-editor {
+    &__content {
+      height: calc(100% - 4rem);
+    }
   }
 </style>
