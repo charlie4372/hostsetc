@@ -1,10 +1,12 @@
-appId: 'com.hosts-etc'
+appId: 'com.hostsetc'
 productName: 'Hosts Etc'
 
 win:
   target: nsis
-  license: license.txt
   requestedExecutionLevel: highestAvailable
+
+nsis:
+  license: license.txt
   createDesktopShortcut: false
   shortcutName: 'Hosts Etc'
 
