@@ -6,7 +6,7 @@
       dark
     >
       <v-app-bar-nav-icon />
-      <v-toolbar-title>Host File Editor</v-toolbar-title>
+      <v-toolbar-title>Host Etc</v-toolbar-title>
     </v-app-bar>
 
     <v-content
