@@ -1,9 +1,10 @@
-appId: 'com.hosted-editor'
+appId: 'com.hosts-etc'
+productName: 'Hosts Etc'
 
 win:
-  target: [
-    nsis
-  ]
-
+  target: nsis
+  license: license.txt
   requestedExecutionLevel: highestAvailable
+  createDesktopShortcut: false
+  shortcutName: 'Hosts Etc'
 

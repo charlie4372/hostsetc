@@ -1,6 +1,6 @@
 {
-  "name": "hosts-file-editor",
-  "version": "0.0.3",
+  "name": "hosts-etc",
+  "version": "0.0.4",
   "license": "MIT",
   "author": "Charlie Broad",
   "scripts": {
