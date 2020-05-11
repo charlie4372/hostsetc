@@ -6,73 +6,36 @@
       <v-list-item-group
         :value="selectedItem"
       >
-        <div
-          v-for="(category, categoryIndex) in hosts.categories"
-          :key="getKey(categoryIndex, 0, 'group')"
+        <template
+          v-for="item in items"
         >
           <v-list-item
-            v-if="categoryIndex !== 0"
-            :key="getKey(categoryIndex, 0, 'view-category')"
-            :value="getKey(categoryIndex, 0, 'view-category')"
+            v-if="item.action"
+            :key="getKey(item.categoryIndex, item.entryIndex, item.action)"
             link
-            @click="onViewCategory(categoryIndex)"
+            :value="getKey(item.categoryIndex, item.entryIndex, item.action)"
+            @click="onPerformAction(item)"
           >
             <v-list-item-content>
-              <v-list-item-title class="font-weight-bold">
-                {{ category.name }}
+              <v-list-item-title :class="item.titleCss">
+                {{ item.label }}
               </v-list-item-title>
             </v-list-item-content>
-          </v-list-item>
-
-          <v-list-item
-            v-for="(entry, entryIndex) in category.entries"
-            :key="getKey(categoryIndex, entryIndex, 'view-entry')"
-            :value="getKey(categoryIndex, entryIndex, 'view-entry')"
-            link
-            @click="onViewEntry(categoryIndex, entryIndex)"
-          >
-            <v-list-item-content>
-              <v-list-item-title>{{ entry.name }}</v-list-item-title>
-            </v-list-item-content>
-            <v-list-item-action>
+            <v-list-item-action
+              v-if="item.entry"
+            >
               <v-switch
-                :input-value="entry.active"
-                @change="onToggleEntryActive(categoryIndex, entryIndex)"
+                :input-value="item.entry.active"
+                @change="onToggleEntryActive(item)"
               />
             </v-list-item-action>
           </v-list-item>
 
-          <v-list-item
-            :key="getKey(categoryIndex, 0, 'add-entry')"
-            :value="getKey(categoryIndex, 0, 'add-entry')"
-            link
-            @click="onAddEntry(categoryIndex)"
-          >
-            <v-list-item-content>
-              <v-list-item-title class="text--secondary">
-                New entry
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-list-item
-            v-if="categoryIndex === 0"
-            :key="getKey(0, 0, 'add-category')"
-            :value="getKey(0, 0, 'add-category')"
-            link
-            @click="onAddCategory"
-          >
-            <v-list-item-content>
-              <v-list-item-title class="text--secondary">
-                New category
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-divider />
-        </div>
-
-        <v-divider />
+          <v-divider
+            v-else
+            :key="item.index"
+          />
+        </template>
 
         <v-list-item
           link
@@ -118,7 +81,7 @@
   import {Hosts} from "@common/hosts";
   import {Prop, Watch} from "vue-property-decorator";
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
-  import {NavigationDrawAction, NavigationDrawSelection} from './types';
+  import {NavigationDrawAction, NavigationDrawDraggableItem, NavigationDrawSelection} from './types';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -144,6 +107,61 @@
 
     protected selectedItem = '';
 
+    protected get items(): NavigationDrawDraggableItem[] {
+      const items: NavigationDrawDraggableItem[] = [];
+
+      for (let categoryIndex = 0; categoryIndex < this.hosts.categories.length; categoryIndex++) {
+        const category = this.hosts.categories[categoryIndex];
+        if (categoryIndex !== 0) {
+          items.push({
+            index: items.length,
+            categoryIndex: categoryIndex,
+            category: category,
+            action: 'view-category',
+            label: category.name,
+            titleCss: 'font-weight-bold'
+          });
+        }
+
+        for (let entryIndex = 0; entryIndex < category.entries.length; entryIndex++) {
+          const entry = category.entries[entryIndex];
+
+          items.push({
+            index: items.length,
+            categoryIndex: categoryIndex,
+            entryIndex: entryIndex,
+            entry: entry,
+            action: 'view-entry',
+            label: entry.name
+          })
+        }
+
+        items.push({
+          index: items.length,
+          categoryIndex: categoryIndex,
+          action: 'add-entry',
+          label: 'New entry',
+          titleCss: 'text--secondary'
+        });
+
+        if (categoryIndex === 0) {
+          items.push({
+            index: items.length,
+            action: 'add-category',
+            label: 'New category',
+            titleCss: 'text--secondary'
+          })
+        }
+
+        items.push({
+          index: items.length,
+          label: 'Separator'
+        })
+      }
+
+      return items;
+    }
+
     public created(): void {
       this.selectedItem = this.getKey(this.currentCategoryIndex, this.currentEntryIndex, this.currentAction);
     }
@@ -164,38 +182,54 @@
     }
 
     protected getKey(categoryIndex: number | null, entryIndex: number | null, action: NavigationDrawAction | string): string {
-      return `category${categoryIndex}_entry-${entryIndex}_action-${action}`;
+      return `category-${categoryIndex || 0}_entry-${entryIndex || 0}_action-${action}`;
     }
 
-    protected onViewEntry(categoryIndex: number, entryIndex: number): void {
-      this.$emit('view-entry', {
-        categoryIndex,
-        entryIndex
-      } as NavigationDrawSelection);
+    protected onPerformAction(item: NavigationDrawDraggableItem): void {
+      if (item.action === undefined) {
+        return;
+      }
+
+      if (item.action === 'view-entry') {
+        if (item.categoryIndex === undefined || item.entryIndex === undefined) {
+          throw new Error('Entry cannot be viewed.')
+        }
+
+        this.$emit('view-entry', {
+          categoryIndex: item.categoryIndex,
+          entryIndex: item.entryIndex
+        } as NavigationDrawSelection);
+      } else if (item.action === 'view-category') {
+        if (item.categoryIndex === undefined) {
+          throw new Error('Category cannot be viewed.')
+        }
+
+        this.$emit('view-category', {
+          categoryIndex: item.categoryIndex,
+          entryIndex: 0
+        } as NavigationDrawSelection);
+      } else if (item.action === 'add-category') {
+        this.$emit('add-category');
+      } else if (item.action === 'add-entry') {
+        if (item.categoryIndex === undefined) {
+          throw new Error('Category cannot be viewed.')
+        }
+
+        this.$emit('add-entry', {
+          categoryIndex: item.categoryIndex,
+          entryIndex: 0
+        } as NavigationDrawSelection);
+      }
     }
 
-    protected onViewCategory(categoryIndex: number): void {
-      this.$emit('view-category', {
-        categoryIndex,
-        entryIndex: 0
-      } as NavigationDrawSelection);
-    }
+    protected onToggleEntryActive(item: NavigationDrawDraggableItem): void {
+      if (item.categoryIndex === undefined || item.entryIndex === undefined) {
+        throw new Error('Item cannot be activated.')
+      }
 
-    protected onAddEntry(categoryIndex: number): void {
-      this.$emit('add-entry', {
-        categoryIndex,
-        entryIndex: 0
-      } as NavigationDrawSelection);
-    }
-
-    protected onAddCategory(): void {
-      this.$emit('add-category');
-    }
-
-    protected onToggleEntryActive(categoryIndex: number, entryIndex: number): void {
       this.$emit('toggle-entry-active', {
-        categoryIndex,
-        entryIndex
+        categoryIndex: item.categoryIndex,
+        entryIndex: item.entryIndex
       } as NavigationDrawSelection);
     }
   }

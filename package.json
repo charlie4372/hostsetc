@@ -14,6 +14,7 @@
     "fs": "0.0.1-security",
     "source-map-support": "^0.5.16",
     "vue": "^2.6.11",
+    "vuedraggable": "^2.23.2",
     "vuetify": "^2.2.21",
     "winattr": "^3.0.0"
   },
