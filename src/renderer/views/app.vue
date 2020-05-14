@@ -14,7 +14,7 @@
     >
       <div class="d-flex h-100">
         <app-navigation-drawer
-          :hosts="hosts"
+          v-model="hosts"
           :changed="changed"
           :current-category-index="currentCategoryIndex"
           :current-entry-index="currentEntryIndex"

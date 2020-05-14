@@ -1,6 +1,5 @@
 export interface Hosts {
   categories: HostsCategory[];
-  readonly: boolean;
 }
 
 export interface HostsEntry {

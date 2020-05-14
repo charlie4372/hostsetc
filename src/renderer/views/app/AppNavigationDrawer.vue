@@ -6,36 +6,41 @@
       <v-list-item-group
         :value="selectedItem"
       >
-        <template
-          v-for="item in items"
+        <draggable
+          v-model="items"
+          :move="onDragMove"
         >
-          <v-list-item
-            v-if="item.action"
-            :key="getKey(item.categoryIndex, item.entryIndex, item.action)"
-            link
-            :value="getKey(item.categoryIndex, item.entryIndex, item.action)"
-            @click="onPerformAction(item)"
+          <template
+            v-for="item in items"
           >
-            <v-list-item-content>
-              <v-list-item-title :class="item.titleCss">
-                {{ item.label }}
-              </v-list-item-title>
-            </v-list-item-content>
-            <v-list-item-action
-              v-if="item.entry"
+            <v-list-item
+              v-if="item.action && item.visible"
+              :key="getKey(item.categoryIndex, item.entryIndex, item.action)"
+              link
+              :value="getKey(item.categoryIndex, item.entryIndex, item.action)"
+              @click="onPerformAction(item)"
             >
-              <v-switch
-                :input-value="item.entry.active"
-                @change="onToggleEntryActive(item)"
-              />
-            </v-list-item-action>
-          </v-list-item>
+              <v-list-item-content>
+                <v-list-item-title :class="item.titleCss">
+                  {{ item.label }}
+                </v-list-item-title>
+              </v-list-item-content>
+              <v-list-item-action
+                v-if="item.entry"
+              >
+                <v-switch
+                  :input-value="item.entry.active"
+                  @change="onToggleEntryActive(item)"
+                />
+              </v-list-item-action>
+            </v-list-item>
 
-          <v-divider
-            v-else
-            :key="item.index"
-          />
-        </template>
+            <v-divider
+              v-else-if="!item.action && item.visible"
+              :key="item.index"
+            />
+          </template>
+        </draggable>
 
         <v-list-item
           link
@@ -81,17 +86,28 @@
   import {Hosts} from "@common/hosts";
   import {Prop, Watch} from "vue-property-decorator";
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
-  import {NavigationDrawAction, NavigationDrawDraggableItem, NavigationDrawSelection} from './types';
+  import {
+    DraggableMoveEvent,
+    NavigationDrawAction,
+    NavigationDrawDraggableCategory,
+    NavigationDrawDraggableEntry,
+    NavigationDrawDraggableItem,
+    NavigationDrawSelection
+  } from './types';
+  import draggable from 'vuedraggable';
+  import { isNavigationDrawDraggableEntry, isNavigationDrawDraggableCategory, isNavigationDrawDraggableAction } from './utils';
+  import {convertHostsToNavigationDrawItems, convertNavigationDrawItemsToHosts} from './AppNavigationDrawerListConvert';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
-      ConfirmButton
+      ConfirmButton,
+      draggable
     }
   })
   export default class AppNavigationDrawer extends Vue {
     @Prop({ type: Object, required: true })
-    public readonly hosts!: Hosts;
+    public readonly value!: Hosts;
 
     @Prop({ type: Number })
     public readonly currentCategoryIndex!: number;
@@ -108,58 +124,12 @@
     protected selectedItem = '';
 
     protected get items(): NavigationDrawDraggableItem[] {
-      const items: NavigationDrawDraggableItem[] = [];
+      return convertHostsToNavigationDrawItems(this.value);
+    }
 
-      for (let categoryIndex = 0; categoryIndex < this.hosts.categories.length; categoryIndex++) {
-        const category = this.hosts.categories[categoryIndex];
-        if (categoryIndex !== 0) {
-          items.push({
-            index: items.length,
-            categoryIndex: categoryIndex,
-            category: category,
-            action: 'view-category',
-            label: category.name,
-            titleCss: 'font-weight-bold'
-          });
-        }
-
-        for (let entryIndex = 0; entryIndex < category.entries.length; entryIndex++) {
-          const entry = category.entries[entryIndex];
-
-          items.push({
-            index: items.length,
-            categoryIndex: categoryIndex,
-            entryIndex: entryIndex,
-            entry: entry,
-            action: 'view-entry',
-            label: entry.name
-          })
-        }
-
-        items.push({
-          index: items.length,
-          categoryIndex: categoryIndex,
-          action: 'add-entry',
-          label: 'New entry',
-          titleCss: 'text--secondary'
-        });
-
-        if (categoryIndex === 0) {
-          items.push({
-            index: items.length,
-            action: 'add-category',
-            label: 'New category',
-            titleCss: 'text--secondary'
-          })
-        }
-
-        items.push({
-          index: items.length,
-          label: 'Separator'
-        })
-      }
-
-      return items;
+    protected set items(newValue: NavigationDrawDraggableItem[]) {
+      debugger
+      this.$emit('input', convertNavigationDrawItemsToHosts(newValue));
     }
 
     public created(): void {
@@ -185,52 +155,48 @@
       return `category-${categoryIndex || 0}_entry-${entryIndex || 0}_action-${action}`;
     }
 
-    protected onPerformAction(item: NavigationDrawDraggableItem): void {
-      if (item.action === undefined) {
-        return;
-      }
-
-      if (item.action === 'view-entry') {
-        if (item.categoryIndex === undefined || item.entryIndex === undefined) {
-          throw new Error('Entry cannot be viewed.')
-        }
-
+    protected onPerformAction(item: NavigationDrawDraggableItem | NavigationDrawDraggableEntry | NavigationDrawDraggableCategory): void {
+      if (isNavigationDrawDraggableEntry(item)) {
         this.$emit('view-entry', {
           categoryIndex: item.categoryIndex,
           entryIndex: item.entryIndex
         } as NavigationDrawSelection);
-      } else if (item.action === 'view-category') {
-        if (item.categoryIndex === undefined) {
-          throw new Error('Category cannot be viewed.')
-        }
-
+      } else if (isNavigationDrawDraggableCategory(item)) {
         this.$emit('view-category', {
           categoryIndex: item.categoryIndex,
           entryIndex: 0
         } as NavigationDrawSelection);
-      } else if (item.action === 'add-category') {
-        this.$emit('add-category');
-      } else if (item.action === 'add-entry') {
-        if (item.categoryIndex === undefined) {
-          throw new Error('Category cannot be viewed.')
+      } else if (isNavigationDrawDraggableAction(item)) {
+        if (item.action === 'add-category') {
+          this.$emit('add-category');
+        } else if (item.action === 'add-entry') {
+          this.$emit('add-entry', {
+            categoryIndex: item.categoryIndex,
+            entryIndex: 0
+          } as NavigationDrawSelection);
         }
-
-        this.$emit('add-entry', {
-          categoryIndex: item.categoryIndex,
-          entryIndex: 0
-        } as NavigationDrawSelection);
       }
     }
 
-    protected onToggleEntryActive(item: NavigationDrawDraggableItem): void {
-      if (item.categoryIndex === undefined || item.entryIndex === undefined) {
-        throw new Error('Item cannot be activated.')
-      }
-
+    protected onToggleEntryActive(item: NavigationDrawDraggableEntry): void {
       this.$emit('toggle-entry-active', {
         categoryIndex: item.categoryIndex,
         entryIndex: item.entryIndex
       } as NavigationDrawSelection);
+    }
+
+    protected onDragMove(event: DraggableMoveEvent<NavigationDrawDraggableItem>): boolean {
+      const isTargetDroppable = isNavigationDrawDraggableAction(event.relatedContext.element) ||
+        isNavigationDrawDraggableCategory(event.relatedContext.element) ||
+        isNavigationDrawDraggableEntry(event.relatedContext.element);
+
+      if (isNavigationDrawDraggableEntry(event.draggedContext.element)) {
+        return isTargetDroppable;
+      } else if (isNavigationDrawDraggableCategory(event.draggedContext.element)) {
+        return isTargetDroppable;
+      }
+
+      return false;
     }
   }
 </script>

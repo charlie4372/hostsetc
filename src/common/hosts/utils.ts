@@ -116,8 +116,7 @@ export function convertFileToHosts(content: string): Hosts {
         value: '',
         active: false
       }]
-    }],
-    readonly: false
+    }]
   }
 
   let currentCategory: HostsCategory  = hosts.categories[0];
