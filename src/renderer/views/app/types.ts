@@ -1,26 +1,13 @@
+export interface NavigationDrawCategoryEvent {
+  categoryIndex: number;
+}
 
-export interface NavigationDrawSelection {
+export interface NavigationDrawEntryEvent {
   categoryIndex: number;
   entryIndex: number;
 }
 
-export type NavigationDrawAction = 'view-entry'|'view-category'|'add-entry'|'add-category'|'view-file';
-
-export interface NavigationDrawItem {
-  label: string;
-  hidden?: boolean;
-}
-
-export interface NavigationDrawDraggableItem extends NavigationDrawItem {
-  dropTarget?: boolean;
-  titleCss?: string;
-}
-
-export interface NavigationDrawDraggableAction extends NavigationDrawDraggableItem {
-  categoryIndex: number;
-  entryIndex?: number;
-  action: NavigationDrawAction;
-}
+export type NavigationDrawAction = 'entry-view'|'category-view'|'entry-new'|'category-new'|'file-view';
 
 /*
 This is a guessed interface.

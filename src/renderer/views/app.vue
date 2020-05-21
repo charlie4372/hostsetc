@@ -19,11 +19,11 @@
           :current-category-index="currentCategoryIndex"
           :current-entry-index="currentEntryIndex"
           :current-action="currentAction"
-          @view-entry="onViewEntry"
-          @add-entry="onAddEntry"
+          @entry-view="onViewEntry"
+          @entry-new="onAddEntry"
           @toggle-entry-active="onToggleEntryActive"
-          @view-category="onViewCategory"
-          @add-category="onAddCategory"
+          @category-view="onViewCategory"
+          @category-new="onAddCategory"
           @view-hosts-file="onViewHostsFile"
           @reload="onReload"
           @save="onSave"
@@ -33,7 +33,7 @@
           fluid
         >
           <host-entry-editor
-            v-if="currentAction === 'view-entry'"
+            v-if="currentAction === 'entry-view'"
             class="w-100 h-100 d-flex flex-column"
             :category="currentCategory"
             :name-readonly="currentEntryIndex === 0 && currentCategoryIndex === 0"
@@ -44,7 +44,7 @@
           />
 
           <host-category-editor
-            v-else-if="currentAction === 'view-category'"
+            v-else-if="currentAction === 'category-view'"
             class="w-100 d-flex flex-column"
             :can-delete="currentCategoryIndex !== 0"
             :value="currentCategory"
@@ -53,7 +53,7 @@
           />
 
           <host-file-editor
-            v-else-if="currentAction === 'view-file'"
+            v-else-if="currentAction === 'file-view'"
             class="w-100 h-100 d-flex flex-column"
             :hosts-path="hostsFile.path"
             :value="hostsContent"
@@ -91,7 +91,11 @@
   import HostCategoryEditor from "@renderer/views/app/HostCategoryEditor.vue";
   import AppNavigationDrawer from "@renderer/views/app/AppNavigationDrawer.vue";
   import HostFileEditor from "@renderer/views/app/HostFileEditor.vue";
-  import {NavigationDrawAction, NavigationDrawSelection} from './app/types';
+  import {
+    NavigationDrawAction,
+    NavigationDrawCategoryEvent,
+    NavigationDrawEntryEvent
+  } from './app/types';
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
 
   // The @Component decorator indicates the class is a Vue component
@@ -105,7 +109,7 @@
     }
   })
   export default class App extends Vue {
-    protected currentAction: NavigationDrawAction = 'view-entry';
+    protected currentAction: NavigationDrawAction = 'entry-view';
     protected currentCategoryIndex = 0;
     protected currentEntryIndex = 0;
     protected hosts!: Hosts;
@@ -177,23 +181,23 @@
     }
 
     protected viewEntry(categoryIndex: number, entryIndex: number): void {
-      this.currentAction = 'view-entry';
+      this.currentAction = 'entry-view';
       this.$nextTick(() => {
         this.currentCategoryIndex = categoryIndex;
         this.currentEntryIndex = entryIndex;
       });
     }
 
-    protected onViewEntry(value: NavigationDrawSelection): void {
+    protected onViewEntry(value: NavigationDrawEntryEvent): void {
       this.viewEntry(value.categoryIndex, value.entryIndex);
     }
 
-    protected onToggleEntryActive(value: NavigationDrawSelection): void {
+    protected onToggleEntryActive(value: NavigationDrawEntryEvent): void {
       this.hosts.categories[value.categoryIndex].entries[value.entryIndex].active = !this.hosts.categories[value.categoryIndex].entries[value.entryIndex].active;
       this.changed = true;
     }
 
-    protected onAddEntry(value: NavigationDrawSelection): void {
+    protected onAddEntry(value: NavigationDrawEntryEvent): void {
       this.hosts.categories[value.categoryIndex].entries.push({
         active: false,
         name: 'New',
@@ -201,7 +205,7 @@
       });
       this.changed = true;
 
-      this.viewEntry(value.categoryIndex, this.currentCategory.entries.length - 1);
+      this.viewEntry(value.categoryIndex, this.hosts.categories[value.categoryIndex].entries.length - 1);
     }
 
     protected onDeleteEntry(): void {
@@ -217,14 +221,14 @@
     }
 
     protected viewCategory(categoryIndex: number): void {
-      this.currentAction = 'view-category';
+      this.currentAction = 'category-view';
       this.$nextTick(() => {
         this.currentCategoryIndex = categoryIndex;
         this.currentEntryIndex = 0;
       });
     }
 
-    protected onViewCategory(value: NavigationDrawSelection): void {
+    protected onViewCategory(value: NavigationDrawCategoryEvent): void {
       this.viewCategory(value.categoryIndex);
     }
 
@@ -261,7 +265,7 @@
     }
 
     protected onViewHostsFile(): void {
-      this.currentAction = 'view-file';
+      this.currentAction = 'file-view';
       this.$nextTick(() => {
         this.hostsContent = convertHostsToFile(this.hosts);
       });

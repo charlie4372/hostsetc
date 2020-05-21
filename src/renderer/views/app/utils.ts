@@ -1,4 +1,5 @@
 import {
+  NavigationDrawAction,
   NavigationDrawDraggableAction,
   NavigationDrawDraggableItem
 } from "./types";
@@ -17,4 +18,8 @@ export function isNavigationDrawDraggableAction(arg: any): arg is NavigationDraw
     typeof arg.categoryIndex === 'number' &&
     typeof arg.action === 'string' &&
     isNavigationDrawDraggableItem(arg);
+}
+
+export function getKey(categoryIndex: number | null, entryIndex: number | null, action: NavigationDrawAction | string): string {
+  return `category-${categoryIndex || 0}_entry-${entryIndex || 0}_action-${action}`;
 }

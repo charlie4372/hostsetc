@@ -3,56 +3,39 @@
     permanent
   >
     <v-list dense>
-      <v-list-item-group
-        :value="selectedItem"
+      <draggable
+        v-model="value.categories"
       >
-        <draggable
-          v-model="items"
-          :move="onDragMove"
-        >
-          <template
-            v-for="item in items"
-          >
-            <v-list-item
-              v-if="item.action && item.visible"
-              :key="getKey(item.categoryIndex, item.entryIndex, item.action)"
-              link
-              :value="getKey(item.categoryIndex, item.entryIndex, item.action)"
-              @click="onPerformAction(item)"
-            >
-              <v-list-item-content>
-                <v-list-item-title :class="item.titleCss">
-                  {{ item.label }}
-                </v-list-item-title>
-              </v-list-item-content>
-              <v-list-item-action
-                v-if="item.entry"
-              >
-                <v-switch
-                  :input-value="item.entry.active"
-                  @change="onToggleEntryActive(item)"
-                />
-              </v-list-item-action>
-            </v-list-item>
+        <app-navigation-drawer-category
+          v-for="(category, categoryIndex) in value.categories"
+          :key="getKey(categoryIndex, null, 'category-view')"
+          :active="selectedItem === getKey(categoryIndex, null, 'category-view')"
+          :category-index="categoryIndex"
+          :category="category"
+          :show-new-category="categoryIndex === 0"
+          :show-header="categoryIndex !== 0"
+          :selected-item="selectedItem"
+          @entry-view="$emit('entry-view', $event)"
+          @entry-new="$emit('entry-new', $event)"
+          @entry-toggle-active="$emit('entry-toggle-active', $event)"
 
-            <v-divider
-              v-else-if="!item.action && item.visible"
-              :key="item.index"
-            />
-          </template>
-        </draggable>
+          @category-view="$emit('category-view', $event)"
+          @category-new="$emit('category-new', $event)"
+        />
 
-        <v-list-item
-          link
-          @click="$emit('view-hosts-file')"
-        >
-          <v-list-item-content>
-            <v-list-item-title class="font-weight-bold">
-              Hosts File
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list-item-group>
+        <v-divider />
+      </draggable>
+
+      <v-list-item
+        link
+        @click="$emit('view-hosts-file')"
+      >
+        <v-list-item-content>
+          <v-list-item-title class="font-weight-bold">
+            Hosts File
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
 
     <template v-slot:append>
@@ -87,25 +70,25 @@
   import {Prop, Watch} from "vue-property-decorator";
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
   import {
-    DraggableMoveEvent,
     NavigationDrawAction,
-    NavigationDrawDraggableCategory,
-    NavigationDrawDraggableEntry,
-    NavigationDrawDraggableItem,
-    NavigationDrawSelection
   } from './types';
   import draggable from 'vuedraggable';
-  import { isNavigationDrawDraggableEntry, isNavigationDrawDraggableCategory, isNavigationDrawDraggableAction } from './utils';
-  import {convertHostsToNavigationDrawItems, convertNavigationDrawItemsToHosts} from './AppNavigationDrawerListConvert';
+  import {
+    getKey
+  } from './utils';
+  import AppNavigationDrawerCategory from "@renderer/views/app/AppNavigationDrawerCategory.vue";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
+      AppNavigationDrawerCategory,
       ConfirmButton,
       draggable
     }
   })
   export default class AppNavigationDrawer extends Vue {
+    protected readonly getKey = getKey;
+
     @Prop({ type: Object, required: true })
     public readonly value!: Hosts;
 
@@ -116,87 +99,30 @@
     public readonly currentEntryIndex!: number;
 
     @Prop({ type: String })
-    public readonly currentAction!: string;
+    public readonly currentAction!: NavigationDrawAction;
 
     @Prop({ type: Boolean })
     public readonly changed!: boolean;
 
     protected selectedItem = '';
 
-    protected get items(): NavigationDrawDraggableItem[] {
-      return convertHostsToNavigationDrawItems(this.value);
-    }
-
-    protected set items(newValue: NavigationDrawDraggableItem[]) {
-      debugger
-      this.$emit('input', convertNavigationDrawItemsToHosts(newValue));
-    }
-
     public created(): void {
-      this.selectedItem = this.getKey(this.currentCategoryIndex, this.currentEntryIndex, this.currentAction);
+      this.selectedItem = getKey(this.currentCategoryIndex, this.currentEntryIndex, this.currentAction);
     }
 
     @Watch('currentCategoryIndex')
     protected onCurrentCategoryIndexChanged(newValue: number | null): void {
-      this.selectedItem = this.getKey(newValue, this.currentEntryIndex, this.currentAction);
+      this.selectedItem = getKey(newValue, this.currentEntryIndex, this.currentAction);
     }
 
     @Watch('currentEntryIndex')
     protected onCurrentEntryIndexChanged(newValue: number | null): void {
-      this.selectedItem = this.getKey(this.currentCategoryIndex, newValue, this.currentAction);
+      this.selectedItem = getKey(this.currentCategoryIndex, newValue, this.currentAction);
     }
 
     @Watch('currentAction')
     protected onCurrentActionChanged(newValue: NavigationDrawAction): void {
-      this.selectedItem = this.getKey(this.currentCategoryIndex, this.currentEntryIndex, newValue);
-    }
-
-    protected getKey(categoryIndex: number | null, entryIndex: number | null, action: NavigationDrawAction | string): string {
-      return `category-${categoryIndex || 0}_entry-${entryIndex || 0}_action-${action}`;
-    }
-
-    protected onPerformAction(item: NavigationDrawDraggableItem | NavigationDrawDraggableEntry | NavigationDrawDraggableCategory): void {
-      if (isNavigationDrawDraggableEntry(item)) {
-        this.$emit('view-entry', {
-          categoryIndex: item.categoryIndex,
-          entryIndex: item.entryIndex
-        } as NavigationDrawSelection);
-      } else if (isNavigationDrawDraggableCategory(item)) {
-        this.$emit('view-category', {
-          categoryIndex: item.categoryIndex,
-          entryIndex: 0
-        } as NavigationDrawSelection);
-      } else if (isNavigationDrawDraggableAction(item)) {
-        if (item.action === 'add-category') {
-          this.$emit('add-category');
-        } else if (item.action === 'add-entry') {
-          this.$emit('add-entry', {
-            categoryIndex: item.categoryIndex,
-            entryIndex: 0
-          } as NavigationDrawSelection);
-        }
-      }
-    }
-
-    protected onToggleEntryActive(item: NavigationDrawDraggableEntry): void {
-      this.$emit('toggle-entry-active', {
-        categoryIndex: item.categoryIndex,
-        entryIndex: item.entryIndex
-      } as NavigationDrawSelection);
-    }
-
-    protected onDragMove(event: DraggableMoveEvent<NavigationDrawDraggableItem>): boolean {
-      const isTargetDroppable = isNavigationDrawDraggableAction(event.relatedContext.element) ||
-        isNavigationDrawDraggableCategory(event.relatedContext.element) ||
-        isNavigationDrawDraggableEntry(event.relatedContext.element);
-
-      if (isNavigationDrawDraggableEntry(event.draggedContext.element)) {
-        return isTargetDroppable;
-      } else if (isNavigationDrawDraggableCategory(event.draggedContext.element)) {
-        return isTargetDroppable;
-      }
-
-      return false;
+      this.selectedItem = getKey(this.currentCategoryIndex, this.currentEntryIndex, newValue);
     }
   }
 </script>
