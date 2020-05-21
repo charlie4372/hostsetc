@@ -26,6 +26,7 @@
 
     <v-list-item
       link
+      @click="onAddEntry"
     >
       <v-list-item-content>
         <v-list-item-title class="text--secondary">
@@ -53,7 +54,7 @@
   import Vue from 'vue';
   import Component from 'vue-class-component';
   import {Prop} from "vue-property-decorator";
-  import {HostsCategory} from "@common/hosts";
+  import {getCategoryFromHosts, Hosts, HostsCategory} from "@common/hosts";
   import AppNavigationDrawerEntry from "@renderer/views/app/hosts-navigation-drawer/AppNavigationDrawerEntry.vue";
   import Draggable from "vuedraggable";
   import {Mutation, State} from "vuex-class";
@@ -66,14 +67,11 @@
     }
   })
   export default class AppNavigationDrawerCategory extends Vue {
-    @State('hosts-navigation-drawer/selectedId')
+    @State('selectedId', { namespace: 'app' })
     protected readonly selectedId!: string | null;
 
-    @Prop({ type: Object, required: true })
-    protected readonly category!: HostsCategory;
-
-    @Prop({ type: Boolean })
-    protected readonly active!: boolean;
+    @State('hosts', { namespace: 'app' })
+    protected readonly hosts!: Hosts;
 
     @Prop({ type: Boolean })
     protected readonly showNewCategory!: boolean;
@@ -81,11 +79,21 @@
     @Prop({ type: Boolean, default: true })
     protected readonly showHeader!: boolean;
 
-    @Mutation('app/viewCategory')
+    @Prop({ type: Object, default: true })
+    protected readonly category!: HostsCategory;
+
+    @Mutation('viewCategory', { namespace: 'app' })
     protected viewCategory!: (id: string) => void;
+
+    @Mutation('addEntry', { namespace: 'app' })
+    protected addEntry!: (category: HostsCategory) => void;
 
     protected onClick(): void {
       this.viewCategory(this.category.id);
+    }
+
+    protected onAddEntry(): void {
+      this.addEntry(this.category);
     }
   }
 </script>

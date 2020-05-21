@@ -4,7 +4,7 @@ import {Module, VuexModule, Mutation} from 'vuex-module-decorators'
 import {AppView} from "./types";
 import {
   createNewEntry,
-  createNewHosts,
+  createNewHosts, getCategoryFromHosts,
   getCategoryWithEntryFromHosts,
   getEntryFromHosts,
   Hosts,
@@ -51,18 +51,22 @@ export default class AppModule extends VuexModule {
 
   @Mutation deleteEntry(value: HostsEntry): void {
     const category = getCategoryWithEntryFromHosts(this.hosts, value.id);
-    if (category === null) {
+    if (category === null || category.entries.length === 1) {
       return;
     }
 
     const index = category.entries.findIndex((entry): boolean => entry.id === value.id);
     if (index !== -1) {
       category.entries.splice(index, 1);
+
+      this.view = 'entry';
+      const newIndex = index >= category.entries.length - 1 ? category.entries.length - 1 : index;
+      this.selectedId = category.entries[newIndex].id;
     }
   }
 
   @Mutation addEntry(category: HostsCategory): void {
-    const currentCategory = getCategoryWithEntryFromHosts(this.hosts, category.id);
+    const currentCategory = getCategoryFromHosts(this.hosts, category.id);
     if (currentCategory !== null) {
       const newEntry = createNewEntry();
       currentCategory.entries.push(newEntry);
