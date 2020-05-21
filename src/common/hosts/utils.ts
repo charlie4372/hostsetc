@@ -9,6 +9,21 @@ const leadingComment = /^\s*#+\s*/;
 const startOfCategoryBlock = /^####Category:(?<name>.*)####$/
 const startOfEntryBlock = /^####Entry:(?<name>.*)####$/
 
+export function createNewHosts(): Hosts {
+  return {
+    categories: [{
+      id: uuidv4(),
+      name: 'Default',
+      entries: [{
+        id: uuidv4(),
+        name: 'Main',
+        value: '',
+        active: false
+      }]
+    }]
+  };
+}
+
 export function isIpV4Record(line: string): boolean {
   return line.match(ipV4Record) !== null;
 }
@@ -109,18 +124,7 @@ export function convertFileToHosts(content: string): Hosts {
     .replace(/\r/g, '\n')
     .split('\n');
 
-  const hosts: Hosts = {
-    categories: [{
-      id: uuidv4(),
-      name: 'Default',
-      entries: [{
-        id: uuidv4(),
-        name: 'Main',
-        value: '',
-        active: false
-      }]
-    }]
-  }
+  const hosts: Hosts = createNewHosts();
 
   let currentCategory: HostsCategory  = hosts.categories[0];
   let currentEntry: HostsEntry = currentCategory.entries[0];
@@ -185,6 +189,7 @@ export function createNewCategory(): HostsCategory {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isHostsEntry(arg: any): arg is HostsEntry {
   if (arg === null || arg === undefined) {
     return false;
@@ -196,6 +201,7 @@ export function isHostsEntry(arg: any): arg is HostsEntry {
     typeof arg.active === 'boolean';
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isHostsCategory(arg: any): arg is HostsCategory {
   if (arg === null || arg === undefined) {
     return false;
@@ -204,5 +210,36 @@ export function isHostsCategory(arg: any): arg is HostsCategory {
   return typeof arg.id === 'string' &&
     typeof arg.name === 'string' &&
     Array.isArray(arg.entries) &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     arg.entries.every((e: any) => isHostsEntry(e));
+}
+
+export function getCategoryWithEntryFromHosts(hosts: Hosts, id: string): HostsCategory | null {
+  const items = hosts.categories.filter((category): boolean => {
+    return category.entries.some((entry): boolean => {
+      return entry.id === id;
+    });
+  });
+  return items.length > 0 ? items[0] : null;
+}
+
+export function getEntryFromHosts(hosts: Hosts, id: string): HostsEntry | null {
+  const category = getCategoryWithEntryFromHosts(hosts, id);
+  if (category === null) {
+    return null;
+  }
+
+  const items = category.entries.filter((entry): boolean => {
+    return entry.id === id;
+  });
+
+  return items.length > 0 ? items[0] : null;
+}
+
+export function getCategoryFromHosts(hosts: Hosts, id: string): HostsCategory | null {
+  const items = hosts.categories.filter((category): boolean => {
+    return category.id === id;
+  });
+
+  return items.length > 0 ? items[0] : null;
 }

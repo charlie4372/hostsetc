@@ -3,7 +3,7 @@
     <v-list-item
       v-if="showHeader"
       link
-      :input-value="active"
+      :input-value="category.id === selectedId"
       @click="onClick"
     >
       <v-list-item-content>
@@ -18,20 +18,14 @@
       @input="$emit('input', category)"
     >
       <app-navigation-drawer-entry
-        v-for="(entry, entryIndex) in category.entries"
-        :key="getKey(categoryIndex, entryIndex, 'entry-view')"
-        :active="selectedItem === getKey(categoryIndex, entryIndex, 'entry-view')"
-        :category-index="categoryIndex"
-        :entry-index="entryIndex"
+        v-for="entry in category.entries"
+        :key="entry.id"
         :entry="entry"
-        @entry-view="$emit('entry-view', $event)"
-        @entry-toggle-active="$emit('entry-toggle-active', $event)"
       />
     </draggable>
 
     <v-list-item
       link
-      @click="onNewEntry"
     >
       <v-list-item-content>
         <v-list-item-title class="text--secondary">
@@ -43,7 +37,6 @@
     <v-list-item
       v-if="showNewCategory"
       link
-      @click="onNewCategory"
     >
       <v-list-item-content>
         <v-list-item-title class="text--secondary">
@@ -61,10 +54,9 @@
   import Component from 'vue-class-component';
   import {Prop} from "vue-property-decorator";
   import {HostsCategory} from "@common/hosts";
-  import { getKey } from './utils';
-  import { NavigationDrawCategoryEvent } from './types';
-  import AppNavigationDrawerEntry from "@renderer/views/app/AppNavigationDrawerEntry.vue";
+  import AppNavigationDrawerEntry from "@renderer/views/app/hosts-navigation-drawer/AppNavigationDrawerEntry.vue";
   import Draggable from "vuedraggable";
+  import {Mutation, State} from "vuex-class";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -74,7 +66,8 @@
     }
   })
   export default class AppNavigationDrawerCategory extends Vue {
-    protected readonly getKey = getKey
+    @State('hosts-navigation-drawer/selectedId')
+    protected readonly selectedId!: string | null;
 
     @Prop({ type: Object, required: true })
     protected readonly category!: HostsCategory;
@@ -88,32 +81,11 @@
     @Prop({ type: Boolean, default: true })
     protected readonly showHeader!: boolean;
 
-    @Prop({ type: Number, required: true })
-    protected readonly categoryIndex!: number;
-
-    @Prop({ type: String })
-    protected readonly selectedItem!: string | null;
+    @Mutation('app/viewCategory')
+    protected viewCategory!: (id: string) => void;
 
     protected onClick(): void {
-      this.$emit('category-view', {
-        categoryIndex: this.categoryIndex,
-      } as NavigationDrawCategoryEvent)
-    }
-
-    protected onMoveEntry(): void {
-      return
-    }
-
-    protected onNewEntry(): void {
-      this.$emit('entry-new', {
-        categoryIndex: this.categoryIndex,
-      } as NavigationDrawCategoryEvent)
-    }
-
-    protected onNewCategory(): void {
-      this.$emit('category-new', {
-        categoryIndex: this.categoryIndex,
-      } as NavigationDrawCategoryEvent)
+      this.viewCategory(this.category.id);
     }
   }
 </script>
