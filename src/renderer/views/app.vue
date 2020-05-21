@@ -85,7 +85,14 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {Hosts, HostsCategory, HostsEntry, convertHostsToFile, convertFileToHosts} from '@common/hosts';
+  import {
+    Hosts,
+    HostsCategory,
+    HostsEntry,
+    convertHostsToFile,
+    convertFileToHosts,
+    createNewCategory, createNewEntry
+  } from '@common/hosts';
   import HostEntryEditor from "@renderer/views/app/HostEntryEditor.vue";
   import {HostsFile} from "@common/hosts-file/HostsFile";
   import HostCategoryEditor from "@renderer/views/app/HostCategoryEditor.vue";
@@ -198,11 +205,7 @@
     }
 
     protected onAddEntry(value: NavigationDrawEntryEvent): void {
-      this.hosts.categories[value.categoryIndex].entries.push({
-        active: false,
-        name: 'New',
-        value: ''
-      });
+      this.hosts.categories[value.categoryIndex].entries.push(createNewEntry());
       this.changed = true;
 
       this.viewEntry(value.categoryIndex, this.hosts.categories[value.categoryIndex].entries.length - 1);
@@ -238,16 +241,7 @@
     }
 
     protected onAddCategory(): void {
-      this.hosts.categories.push({
-        name: 'New',
-        entries: [
-          {
-            active: false,
-            value: '',
-            name: 'Default'
-          }
-        ]
-      });
+      this.hosts.categories.push(createNewCategory());
 
       this.viewCategory(this.hosts.categories.length - 1);
     }

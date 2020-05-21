@@ -1,4 +1,5 @@
 import {Hosts, HostsCategory, HostsEntry} from "@common/hosts/types";
+import { v4 as uuidv4 } from 'uuid';
 
 const ipV4Record = /^\s*#?\s*(?:[0-9]{1,3}\.){3}[0-9]{1,3}\s+([^#]+)/;
 const ipV6Record = /^\s*#?\s*(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}\s+([^#]+)/;
@@ -110,8 +111,10 @@ export function convertFileToHosts(content: string): Hosts {
 
   const hosts: Hosts = {
     categories: [{
+      id: uuidv4(),
       name: 'Default',
       entries: [{
+        id: uuidv4(),
         name: 'Main',
         value: '',
         active: false
@@ -128,12 +131,14 @@ export function convertFileToHosts(content: string): Hosts {
 
     if (startOfCategory !== null) {
       currentCategory = {
+        id: uuidv4(),
         name: startOfCategory.groups ? startOfCategory.groups.name : '',
         entries: []
       }
       hosts.categories.push(currentCategory);
     } else if (startOfEntry !== null) {
       currentEntry = {
+        id: uuidv4(),
         name: startOfEntry.groups ? startOfEntry.groups.name : '',
         value: '',
         active: false
@@ -161,12 +166,32 @@ export function convertFileToHosts(content: string): Hosts {
   return hosts;
 }
 
+export function createNewEntry(): HostsEntry {
+  return {
+    id: uuidv4(),
+    name: 'New',
+    value: '',
+    active: false
+  };
+}
+
+export function createNewCategory(): HostsCategory {
+  return {
+    id: uuidv4(),
+    name: 'New',
+    entries: [
+      createNewEntry()
+    ]
+  }
+}
+
 export function isHostsEntry(arg: any): arg is HostsEntry {
   if (arg === null || arg === undefined) {
     return false;
   }
 
   return typeof arg.name === 'string' &&
+    typeof arg.name === 'string' &&
     typeof arg.value === 'string' &&
     typeof arg.active === 'boolean';
 }
@@ -176,7 +201,8 @@ export function isHostsCategory(arg: any): arg is HostsCategory {
     return false;
   }
 
-  return typeof arg.name === 'string' &&
+  return typeof arg.id === 'string' &&
+    typeof arg.name === 'string' &&
     Array.isArray(arg.entries) &&
     arg.entries.every((e: any) => isHostsEntry(e));
 }
