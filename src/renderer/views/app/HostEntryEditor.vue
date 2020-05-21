@@ -24,7 +24,8 @@
         <confirm-button
           button-text="Delete"
           content="Are you sure you want to delete this entry?"
-          :button-disabled="!canDelete"
+          :button-disabled="category !== null && category.entries.length === 1"
+          @click="onDelete"
         />
       </div>
     </v-card-text>
@@ -63,11 +64,11 @@
     @Prop({type: Boolean})
     public readonly nameReadonly!: boolean;
 
-    @Prop({type: Boolean})
-    public readonly canDelete!: boolean;
-
     @Mutation('updateEntry', { namespace: 'app' })
     protected updateEntry!: (value: HostsEntry) => void;
+
+    @Mutation('deleteEntry', { namespace: 'app' })
+    protected deleteEntry!: (value: HostsEntry) => void;
 
     protected get category(): HostsCategory | null {
       if (this.selectedId === null) {
@@ -104,6 +105,12 @@
         ...this.entry,
         value: value
       });
+    }
+
+    protected onDelete(): void {
+      if (this.entry !== null) {
+        this.deleteEntry(this.entry);
+      }
     }
   }
 </script>

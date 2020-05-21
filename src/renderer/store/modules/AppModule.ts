@@ -2,7 +2,15 @@
 
 import {Module, VuexModule, Mutation} from 'vuex-module-decorators'
 import {AppView} from "./types";
-import {createNewHosts, getEntryFromHosts, Hosts, HostsEntry} from "@common/hosts";
+import {
+  createNewEntry,
+  createNewHosts,
+  getCategoryWithEntryFromHosts,
+  getEntryFromHosts,
+  Hosts,
+  HostsCategory,
+  HostsEntry
+} from "@common/hosts";
 
 @Module({ namespaced: true })
 export default class AppModule extends VuexModule {
@@ -34,13 +42,33 @@ export default class AppModule extends VuexModule {
 
   @Mutation updateEntry(value: HostsEntry): void {
     const currentEntry = getEntryFromHosts(this.hosts, value.id);
-    // This should never happen.
-    if (currentEntry === null) {
-      this.hosts.categories[0].entries.push(value);
-    } else {
+    if (currentEntry !== null) {
       currentEntry.name = value.name;
       currentEntry.active = value.active;
       currentEntry.value = value.value;
+    }
+  }
+
+  @Mutation deleteEntry(value: HostsEntry): void {
+    const category = getCategoryWithEntryFromHosts(this.hosts, value.id);
+    if (category === null) {
+      return;
+    }
+
+    const index = category.entries.findIndex((entry): boolean => entry.id === value.id);
+    if (index !== -1) {
+      category.entries.splice(index, 1);
+    }
+  }
+
+  @Mutation addEntry(category: HostsCategory): void {
+    const currentCategory = getCategoryWithEntryFromHosts(this.hosts, category.id);
+    if (currentCategory !== null) {
+      const newEntry = createNewEntry();
+      currentCategory.entries.push(newEntry);
+
+      this.view = 'entry';
+      this.selectedId = newEntry.id;
     }
   }
 
