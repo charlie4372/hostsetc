@@ -37,7 +37,6 @@ export class HostsFile {
     const hostsPath = path && fs.existsSync(path) ? path : this.getHostsPath();
     if (hostsPath === null) {
       this.hosts = convertFileToHosts('# The hosts file could not be found.');
-      this.hosts.readonly = true;
       return;
     }
 

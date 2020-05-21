@@ -43,7 +43,7 @@ module.exports = function(config) {
   //   }
   // });
 
-  // console.log(JSON.stringify(config.resolve, null, 4))
+  // console.log(JSON.stringify(config.module, null, 4))
 
   return config;
 }

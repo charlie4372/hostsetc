@@ -116,8 +116,7 @@ export function convertFileToHosts(content: string): Hosts {
         value: '',
         active: false
       }]
-    }],
-    readonly: false
+    }]
   }
 
   let currentCategory: HostsCategory  = hosts.categories[0];
@@ -160,4 +159,24 @@ export function convertFileToHosts(content: string): Hosts {
   }
 
   return hosts;
+}
+
+export function isHostsEntry(arg: any): arg is HostsEntry {
+  if (arg === null || arg === undefined) {
+    return false;
+  }
+
+  return typeof arg.name === 'string' &&
+    typeof arg.value === 'string' &&
+    typeof arg.active === 'boolean';
+}
+
+export function isHostsCategory(arg: any): arg is HostsCategory {
+  if (arg === null || arg === undefined) {
+    return false;
+  }
+
+  return typeof arg.name === 'string' &&
+    Array.isArray(arg.entries) &&
+    arg.entries.every((e: any) => isHostsEntry(e));
 }
