@@ -54,7 +54,7 @@
   import Vue from 'vue';
   import Component from 'vue-class-component';
   import {Prop} from "vue-property-decorator";
-  import {getCategoryFromHosts, Hosts, HostsCategory} from "@common/hosts";
+  import {Hosts, HostsCategory} from "@common/hosts";
   import AppNavigationDrawerEntry from "@renderer/views/app/hosts-navigation-drawer/AppNavigationDrawerEntry.vue";
   import Draggable from "vuedraggable";
   import {Mutation, State} from "vuex-class";

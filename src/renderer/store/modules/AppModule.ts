@@ -1,8 +1,9 @@
 // https://medium.com/coding-blocks/writing-vuex-modules-in-neat-typescript-classes-9bf7b505e7b5
 
-import {Module, VuexModule, Mutation} from 'vuex-module-decorators'
+import {Module, VuexModule, Mutation, MutationAction, Action} from 'vuex-module-decorators'
 import {AppView} from "./types";
 import {
+  convertHostsToFile,
   createNewEntry,
   createNewHosts, getCategoryFromHosts,
   getCategoryWithEntryFromHosts,
@@ -11,6 +12,7 @@ import {
   HostsCategory,
   HostsEntry
 } from "@common/hosts";
+import {HostsFile} from "@common/hosts-file/HostsFile";
 
 @Module({ namespaced: true })
 export default class AppModule extends VuexModule {
@@ -19,6 +21,10 @@ export default class AppModule extends VuexModule {
   public view: AppView = "entry";
 
   public hosts: Hosts = createNewHosts();
+
+  public hostsFilePath = '/etc/hosts';
+
+  public hostsFileContent = '';
 
   @Mutation setSelectedId(id: string | null): void {
     this.selectedId = id;
@@ -34,12 +40,6 @@ export default class AppModule extends VuexModule {
     this.selectedId = id;
   }
 
-  @Mutation setHosts(value: Hosts): void {
-    this.hosts = value;
-    this.view = 'entry';
-    this.selectedId = value.categories[0].entries[0].id;
-  }
-
   @Mutation updateEntry(value: HostsEntry): void {
     const currentEntry = getEntryFromHosts(this.hosts, value.id);
     if (currentEntry !== null) {
@@ -47,6 +47,8 @@ export default class AppModule extends VuexModule {
       currentEntry.active = value.active;
       currentEntry.value = value.value;
     }
+
+    this.hostsFileContent = convertHostsToFile(this.hosts);
   }
 
   @Mutation deleteEntry(value: HostsEntry): void {
@@ -63,6 +65,8 @@ export default class AppModule extends VuexModule {
       const newIndex = index >= category.entries.length - 1 ? category.entries.length - 1 : index;
       this.selectedId = category.entries[newIndex].id;
     }
+
+    this.hostsFileContent = convertHostsToFile(this.hosts);
   }
 
   @Mutation addEntry(category: HostsCategory): void {
@@ -74,7 +78,29 @@ export default class AppModule extends VuexModule {
       this.view = 'entry';
       this.selectedId = newEntry.id;
     }
+
+    this.hostsFileContent = convertHostsToFile(this.hosts);
   }
+
+  @MutationAction({ mutate: ['hosts', 'hostsFilePath', 'hostsFileContent', 'selectedId'] })
+  async loadHostsFile(): Promise<{ hosts: Hosts; hostsFilePath: string; hostsFileContent: string; selectedId: string }> {
+    const hostsFile = new HostsFile();
+    await hostsFile.load();
+    return {
+      hosts: hostsFile.hosts || this.hosts,
+      hostsFilePath: hostsFile.path,
+      hostsFileContent: hostsFile.content || this.hostsFileContent,
+      selectedId: hostsFile.hosts ? hostsFile.hosts.categories[0].entries[0].id : this.hosts.categories[0].entries[0].id
+    };
+  }
+
+  @Action
+  async saveHostsFile(): Promise<void> {
+    const hostsFile = new HostsFile();
+    hostsFile.hosts = this.hosts;
+    await hostsFile.save();
+  }
+
 
   // @Mutation decrement(delta: number) {this.count-=delta}
   //

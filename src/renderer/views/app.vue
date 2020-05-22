@@ -13,10 +13,7 @@
       class="app__content"
     >
       <div class="d-flex h-100">
-        <app-navigation-drawer
-          @reload="onReload"
-          @save="onSave"
-        />
+        <app-navigation-drawer />
         <v-container
           class="fill-height align-start justify-start flex-column app__container"
           fluid
@@ -34,8 +31,8 @@
           <host-file-editor
             v-else-if="view === 'file'"
             class="w-100 h-100 d-flex flex-column"
-            :hosts-path="hostsFile.path"
-            :value="hostsContent"
+            :hosts-path="hostsFilePath"
+            :value="hostsFileContent"
           />
 
           <v-snackbar
@@ -67,13 +64,12 @@
     Hosts,
   } from '@common/hosts';
   import HostEntryEditor from "@renderer/views/app/HostEntryEditor.vue";
-  import {HostsFile} from "@common/hosts-file/HostsFile";
   import HostCategoryEditor from "@renderer/views/app/HostCategoryEditor.vue";
   import AppNavigationDrawer from "@renderer/views/app/hosts-navigation-drawer/AppNavigationDrawer.vue";
   import HostFileEditor from "@renderer/views/app/HostFileEditor.vue";
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
   import {AppView} from "@renderer/store/modules/types";
-  import {Mutation, State} from 'vuex-class';
+  import {Mutation, State, Action} from 'vuex-class';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -86,9 +82,6 @@
     }
   })
   export default class App extends Vue {
-    protected hostsFile: HostsFile = new HostsFile();
-    protected hostsContent = '';
-
     protected notificationVisible = false;
     protected notificationText = '';
     protected notificationColor = 'success';
@@ -99,50 +92,29 @@
     @State('hosts', { namespace: 'app' })
     protected hosts!: Hosts;
 
+    @State('hostsFilePath', { namespace: 'app' })
+    protected hostsFilePath!: string;
+
+    @State('hostsFileContent', { namespace: 'app' })
+    protected hostsFileContent!: string;
+
     @Mutation('viewEntry', { namespace: 'app' })
     protected viewEntry!: (id: string) => void;
 
-    @Mutation('setHosts', { namespace: 'app' })
-    protected setHosts!: (value: Hosts) => void;
+    @Action('loadHostsFile', { namespace: 'app' })
+    protected loadHostsFile!: () => Promise<void>;
 
     public constructor() {
       super();
-
-      this.hostsFile.load();
-      this.setHosts(this.hostsFile.hosts)
-
-      // The TS defaults kick in after the constructor.
-      // But if they're not there, then they don't register with vue.
-      this.$nextTick(() => {
-        this.setHosts(this.hostsFile.hosts);
-      });
     }
 
-    protected onReload(): void {
-      this.hostsFile.load();
-      this.setHosts(this.hostsFile.hosts);
-
-      this.showNotification('success', 'Reloaded hosts file.');
-    }
-
-    protected onSave(): void {
-      this.hostsFile.hosts = this.hosts;
-
+    public async mounted(): Promise<void> {
       try {
-        this.hostsFile.save();
-        this.showNotification('success', 'Saved hosts file.');
+        await this.loadHostsFile();
       } catch (e) {
         console.log(e);
-        this.showNotification('error', 'Failed to save hosts file.');
+        this.$toast.error('Failed to load the hosts file.', {queueable: true});
       }
-    }
-
-    protected showNotification(color: string, text: string): void {
-      this.$nextTick(() => {
-        this.notificationText = text;
-        this.notificationColor = color;
-        this.notificationVisible = true;
-      });
     }
   }
 </script>

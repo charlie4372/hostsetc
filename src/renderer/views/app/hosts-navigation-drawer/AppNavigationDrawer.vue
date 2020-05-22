@@ -34,7 +34,7 @@
         <div>
           <v-btn
             block
-            @click="$emit('reload')"
+            @click="onReload"
           >
             Reload
           </v-btn>
@@ -45,7 +45,7 @@
             button-color="primary"
             button-text="Save"
             content="This will update your hosts file."
-            @click="$emit('save')"
+            @click="onSave"
           />
         </div>
       </div>
@@ -60,7 +60,7 @@
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
   import draggable from 'vuedraggable';
   import AppNavigationDrawerCategory from "@renderer/views/app/hosts-navigation-drawer/AppNavigationDrawerCategory.vue";
-  import {Mutation, State} from "vuex-class";
+  import {Action, Mutation, State} from "vuex-class";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -77,6 +77,15 @@
     @Mutation('setHosts', { namespace: 'app' })
     protected setHosts!: (value: Hosts) => void;
 
+    @Action('loadHostsFile', { namespace: 'app' })
+    protected loadHostsFile!: () => Promise<void>;
+
+    @Action('saveHostsFile', { namespace: 'app' })
+    protected saveHostsFile!: () => Promise<void>;
+
+    @Mutation('add', { namespace: 'notifications' })
+    protected addNotification!: (notification: Notification) => void;
+
     protected get categories(): HostsCategory[] {
       return this.hosts.categories;
     }
@@ -86,6 +95,26 @@
         ...this.hosts,
         categories: value
       });
+    }
+
+    protected async onReload(): Promise<void> {
+      try {
+        await this.loadHostsFile();
+        this.$toast.success('Loaded the hosts file.', { queueable: true });
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Failed to load the hosts file.', { queueable: true });
+      }
+    }
+
+    protected async onSave(): Promise<void> {
+      try {
+        await this.saveHostsFile()
+        this.$toast.success('Saved the hosts file.', { queueable: true });
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Failed to save the hosts file.', { queueable: true });
+      }
     }
   }
 </script>
