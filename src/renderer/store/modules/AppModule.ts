@@ -82,6 +82,27 @@ export default class AppModule extends VuexModule {
     this.hostsFileContent = convertHostsToFile(this.hosts);
   }
 
+  @Mutation updateCategory(value: HostsCategory): void {
+    const currentCategory = getCategoryFromHosts(this.hosts, value.id);
+    if (currentCategory !== null) {
+      currentCategory.name = value.name;
+    }
+
+    this.hostsFileContent = convertHostsToFile(this.hosts);
+  }
+
+  @Mutation deleteCategory(value: HostsCategory): void {
+    const index = this.hosts.categories.findIndex((category): boolean => category.id === value.id);
+    if (index !== -1) {
+      this.hosts.categories.splice(index, 1);
+
+      this.view = 'entry';
+      this.selectedId = this.hosts.categories[0].entries[0].id;
+    }
+
+    this.hostsFileContent = convertHostsToFile(this.hosts);
+  }
+
   @MutationAction({ mutate: ['hosts', 'hostsFilePath', 'hostsFileContent', 'selectedId'] })
   async loadHostsFile(): Promise<{ hosts: Hosts; hostsFilePath: string; hostsFileContent: string; selectedId: string }> {
     const hostsFile = new HostsFile();
