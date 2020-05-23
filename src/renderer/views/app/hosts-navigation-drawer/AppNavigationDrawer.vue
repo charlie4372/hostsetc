@@ -19,7 +19,7 @@
 
       <v-list-item
         link
-        @click="$emit('view-hosts-file')"
+        @click="onViewFile"
       >
         <v-list-item-content>
           <v-list-item-title class="font-weight-bold">
@@ -86,6 +86,9 @@
     @Mutation('add', { namespace: 'notifications' })
     protected addNotification!: (notification: Notification) => void;
 
+    @Mutation('viewFile', { namespace: 'app' })
+    protected viewFile!: () => void;
+
     protected get categories(): HostsCategory[] {
       return this.hosts.categories;
     }
@@ -119,6 +122,15 @@
       } catch (e) {
         console.log(e);
         this.$toast.error('Save failed.', { queueable: true });
+      }
+    }
+
+    protected onViewFile(): void {
+      try {
+        this.viewFile();
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('View file failed.');
       }
     }
   }

@@ -24,7 +24,7 @@
         <confirm-button
           button-text="Delete"
           content="Are you sure you want to delete this entry?"
-          :button-disabled="category !== null && category.entries.length === 1"
+          :button-disabled="!canDelete"
           @click="onDelete"
         />
       </div>
@@ -83,6 +83,14 @@
       }
 
       return getEntryFromHosts(this.hosts, this.selectedId);
+    }
+
+    protected get canDelete(): boolean {
+      if (this.category === null) {
+        return false;
+      }
+
+      return this.category.entries.length > 1;
     }
 
     protected onUpdateName(value: string): void {

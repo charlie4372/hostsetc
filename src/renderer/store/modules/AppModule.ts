@@ -44,6 +44,11 @@ export default class AppModule extends VuexModule {
     this.selectedId = id;
   }
 
+  @Mutation viewFile(): void {
+    this.view = 'file';
+    this.selectedId = null;
+  }
+
   @Mutation updateEntry(value: HostsEntry): void {
     const currentEntry = getEntryFromHosts(this.hosts, value.id);
     if (currentEntry === null) {
