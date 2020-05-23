@@ -113,10 +113,10 @@
       this.isFileBusy = true;
       try {
         await this.loadHostsFile();
-        this.$toast.success('Reload succeeded.', { queueable: true });
+        this.$toast.success('Reload succeeded.');
       } catch (e) {
         console.log(e);
-        this.$toast.error('Reload failed.', { queueable: true });
+        this.$toast.error('Reload failed.');
       } finally {
         this.isFileBusy = false;
       }
@@ -126,10 +126,10 @@
       this.isFileBusy = true;
       try {
         await this.saveHostsFile()
-        this.$toast.success('Saved succeeded.', { queueable: true });
+        this.$toast.success('Saved succeeded.');
       } catch (e) {
         console.log(e);
-        this.$toast.error('Save failed.', { queueable: true });
+        this.$toast.error('Save failed.');
       } finally {
         this.isFileBusy = false;
       }
