@@ -1,4 +1,5 @@
 import {Hosts, HostsCategory, HostsEntry} from "@common/hosts/types";
+import { v4 as uuidv4 } from 'uuid';
 
 const ipV4Record = /^\s*#?\s*(?:[0-9]{1,3}\.){3}[0-9]{1,3}\s+([^#]+)/;
 const ipV6Record = /^\s*#?\s*(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}\s+([^#]+)/;
@@ -7,6 +8,21 @@ const leadingComment = /^\s*#+\s*/;
 
 const startOfCategoryBlock = /^####Category:(?<name>.*)####$/
 const startOfEntryBlock = /^####Entry:(?<name>.*)####$/
+
+export function createNewHosts(): Hosts {
+  return {
+    categories: [{
+      id: uuidv4(),
+      name: 'Default',
+      entries: [{
+        id: uuidv4(),
+        name: 'Main',
+        value: '',
+        active: false
+      }]
+    }]
+  };
+}
 
 export function isIpV4Record(line: string): boolean {
   return line.match(ipV4Record) !== null;
@@ -108,16 +124,7 @@ export function convertFileToHosts(content: string): Hosts {
     .replace(/\r/g, '\n')
     .split('\n');
 
-  const hosts: Hosts = {
-    categories: [{
-      name: 'Default',
-      entries: [{
-        name: 'Main',
-        value: '',
-        active: false
-      }]
-    }]
-  }
+  const hosts: Hosts = createNewHosts();
 
   let currentCategory: HostsCategory  = hosts.categories[0];
   let currentEntry: HostsEntry = currentCategory.entries[0];
@@ -128,12 +135,14 @@ export function convertFileToHosts(content: string): Hosts {
 
     if (startOfCategory !== null) {
       currentCategory = {
+        id: uuidv4(),
         name: startOfCategory.groups ? startOfCategory.groups.name : '',
         entries: []
       }
       hosts.categories.push(currentCategory);
     } else if (startOfEntry !== null) {
       currentEntry = {
+        id: uuidv4(),
         name: startOfEntry.groups ? startOfEntry.groups.name : '',
         value: '',
         active: false
@@ -161,22 +170,76 @@ export function convertFileToHosts(content: string): Hosts {
   return hosts;
 }
 
+export function createNewEntry(): HostsEntry {
+  return {
+    id: uuidv4(),
+    name: 'New',
+    value: '',
+    active: false
+  };
+}
+
+export function createNewCategory(): HostsCategory {
+  return {
+    id: uuidv4(),
+    name: 'New',
+    entries: [
+      createNewEntry()
+    ]
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isHostsEntry(arg: any): arg is HostsEntry {
   if (arg === null || arg === undefined) {
     return false;
   }
 
   return typeof arg.name === 'string' &&
+    typeof arg.name === 'string' &&
     typeof arg.value === 'string' &&
     typeof arg.active === 'boolean';
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isHostsCategory(arg: any): arg is HostsCategory {
   if (arg === null || arg === undefined) {
     return false;
   }
 
-  return typeof arg.name === 'string' &&
+  return typeof arg.id === 'string' &&
+    typeof arg.name === 'string' &&
     Array.isArray(arg.entries) &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     arg.entries.every((e: any) => isHostsEntry(e));
+}
+
+export function getCategoryWithEntryFromHosts(hosts: Hosts, id: string): HostsCategory | null {
+  const items = hosts.categories.filter((category): boolean => {
+    return category.entries.some((entry): boolean => {
+      return entry.id === id;
+    });
+  });
+  return items.length > 0 ? items[0] : null;
+}
+
+export function getEntryFromHosts(hosts: Hosts, id: string): HostsEntry | null {
+  const category = getCategoryWithEntryFromHosts(hosts, id);
+  if (category === null) {
+    return null;
+  }
+
+  const items = category.entries.filter((entry): boolean => {
+    return entry.id === id;
+  });
+
+  return items.length > 0 ? items[0] : null;
+}
+
+export function getCategoryFromHosts(hosts: Hosts, id: string): HostsCategory | null {
+  const items = hosts.categories.filter((category): boolean => {
+    return category.id === id;
+  });
+
+  return items.length > 0 ? items[0] : null;
 }

@@ -13,51 +13,26 @@
       class="app__content"
     >
       <div class="d-flex h-100">
-        <app-navigation-drawer
-          v-model="hosts"
-          :changed="changed"
-          :current-category-index="currentCategoryIndex"
-          :current-entry-index="currentEntryIndex"
-          :current-action="currentAction"
-          @entry-view="onViewEntry"
-          @entry-new="onAddEntry"
-          @toggle-entry-active="onToggleEntryActive"
-          @category-view="onViewCategory"
-          @category-new="onAddCategory"
-          @view-hosts-file="onViewHostsFile"
-          @reload="onReload"
-          @save="onSave"
-        />
+        <app-navigation-drawer />
         <v-container
           class="fill-height align-start justify-start flex-column app__container"
           fluid
         >
           <host-entry-editor
-            v-if="currentAction === 'entry-view'"
+            v-if="view === 'entry'"
             class="w-100 h-100 d-flex flex-column"
-            :category="currentCategory"
-            :name-readonly="currentEntryIndex === 0 && currentCategoryIndex === 0"
-            :can-delete="currentCategory.entries.length > 1"
-            :value="currentEntry"
-            @input="onUpdateEntry"
-            @deleted="onDeleteEntry"
           />
 
           <host-category-editor
-            v-else-if="currentAction === 'category-view'"
+            v-else-if="view === 'category'"
             class="w-100 d-flex flex-column"
-            :can-delete="currentCategoryIndex !== 0"
-            :value="currentCategory"
-            @input="onUpdateCategory"
-            @deleted="onDeleteCategory"
           />
 
           <host-file-editor
-            v-else-if="currentAction === 'file-view'"
+            v-else-if="view === 'file'"
             class="w-100 h-100 d-flex flex-column"
-            :hosts-path="hostsFile.path"
-            :value="hostsContent"
-            @input="onUpdateHostsFile"
+            :hosts-path="hostsFilePath"
+            :value="hostsFileContent"
           />
 
           <v-snackbar
@@ -85,18 +60,16 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {Hosts, HostsCategory, HostsEntry, convertHostsToFile, convertFileToHosts} from '@common/hosts';
-  import HostEntryEditor from "@renderer/views/app/HostEntryEditor.vue";
-  import {HostsFile} from "@common/hosts-file/HostsFile";
-  import HostCategoryEditor from "@renderer/views/app/HostCategoryEditor.vue";
-  import AppNavigationDrawer from "@renderer/views/app/AppNavigationDrawer.vue";
-  import HostFileEditor from "@renderer/views/app/HostFileEditor.vue";
   import {
-    NavigationDrawAction,
-    NavigationDrawCategoryEvent,
-    NavigationDrawEntryEvent
-  } from './app/types';
+    Hosts,
+  } from '@common/hosts';
+  import HostEntryEditor from "@renderer/views/app/HostEntryEditor.vue";
+  import HostCategoryEditor from "@renderer/views/app/HostCategoryEditor.vue";
+  import AppNavigationDrawer from "@renderer/views/app/hosts-navigation-drawer/AppNavigationDrawer.vue";
+  import HostFileEditor from "@renderer/views/app/HostFileEditor.vue";
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
+  import {AppView} from "@renderer/store/modules/types";
+  import {Mutation, State, Action} from 'vuex-class';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -109,171 +82,39 @@
     }
   })
   export default class App extends Vue {
-    protected currentAction: NavigationDrawAction = 'entry-view';
-    protected currentCategoryIndex = 0;
-    protected currentEntryIndex = 0;
-    protected hosts!: Hosts;
-    protected hostsFile: HostsFile = new HostsFile();
-    protected hostsContent = '';
-    protected changed = false;
-
     protected notificationVisible = false;
     protected notificationText = '';
     protected notificationColor = 'success';
 
-    protected get currentCategory(): HostsCategory {
-      return this.hosts.categories[this.currentCategoryIndex];
-    }
+    @State('view', { namespace: 'app' })
+    protected view!: AppView;
 
-    protected get currentEntry(): HostsEntry {
-      return this.currentCategory.entries[this.currentEntryIndex];
-    }
+    @State('hosts', { namespace: 'app' })
+    protected hosts!: Hosts;
+
+    @State('hostsFilePath', { namespace: 'app' })
+    protected hostsFilePath!: string;
+
+    @State('hostsFileContent', { namespace: 'app' })
+    protected hostsFileContent!: string;
+
+    @Mutation('viewEntry', { namespace: 'app' })
+    protected viewEntry!: (id: string) => void;
+
+    @Action('loadHostsFile', { namespace: 'app' })
+    protected loadHostsFile!: () => Promise<void>;
 
     public constructor() {
       super();
-
-      this.hostsFile.load();
-      this.hosts = this.hostsFile.hosts;
-
-      // The TS defaults kick in after the constructor.
-      // But if they're not there, then they don't register with vue.
-      this.$nextTick(() => {
-        this.hosts = this.hostsFile.hosts;
-        this.viewEntry(0, 0);
-      });
     }
 
-    protected onReload(): void {
-      this.hostsFile.load();
-
-      this.hosts = this.hostsFile.hosts;
-      this.viewEntry(0, 0);
-      this.changed = false;
-
-      this.showNotification('success', 'Reloaded hosts file.');
-    }
-
-    protected onSave(): void {
-      this.hostsFile.hosts = this.hosts;
-
+    public async mounted(): Promise<void> {
       try {
-        this.hostsFile.save();
-        this.changed = false;
-        this.showNotification('success', 'Saved hosts file.');
+        await this.loadHostsFile();
       } catch (e) {
         console.log(e);
-        this.showNotification('error', 'Failed to save hosts file.');
+        this.$toast.error('Failed to load the hosts file.', {queueable: true});
       }
-    }
-
-    protected showNotification(color: string, text: string): void {
-      this.$nextTick(() => {
-        this.notificationText = text;
-        this.notificationColor = color;
-        this.notificationVisible = true;
-      });
-    }
-
-    protected onUpdateEntry(entry: HostsEntry): void {
-      this.currentEntry.name = entry.name;
-      this.currentEntry.value = entry.value;
-      this.currentEntry.active = entry.active;
-    }
-
-    protected viewEntry(categoryIndex: number, entryIndex: number): void {
-      this.currentAction = 'entry-view';
-      this.$nextTick(() => {
-        this.currentCategoryIndex = categoryIndex;
-        this.currentEntryIndex = entryIndex;
-      });
-    }
-
-    protected onViewEntry(value: NavigationDrawEntryEvent): void {
-      this.viewEntry(value.categoryIndex, value.entryIndex);
-    }
-
-    protected onToggleEntryActive(value: NavigationDrawEntryEvent): void {
-      this.hosts.categories[value.categoryIndex].entries[value.entryIndex].active = !this.hosts.categories[value.categoryIndex].entries[value.entryIndex].active;
-      this.changed = true;
-    }
-
-    protected onAddEntry(value: NavigationDrawEntryEvent): void {
-      this.hosts.categories[value.categoryIndex].entries.push({
-        active: false,
-        name: 'New',
-        value: ''
-      });
-      this.changed = true;
-
-      this.viewEntry(value.categoryIndex, this.hosts.categories[value.categoryIndex].entries.length - 1);
-    }
-
-    protected onDeleteEntry(): void {
-      const entryIndexToDelete = this.currentEntryIndex;
-
-      if (this.currentEntryIndex === this.currentCategory.entries.length - 1) {
-        this.viewEntry(this.currentCategoryIndex, this.currentEntryIndex - 1);
-      }
-      this.$nextTick(() => {
-        this.currentCategory.entries.splice(entryIndexToDelete, 1);
-        this.changed = true;
-      });
-    }
-
-    protected viewCategory(categoryIndex: number): void {
-      this.currentAction = 'category-view';
-      this.$nextTick(() => {
-        this.currentCategoryIndex = categoryIndex;
-        this.currentEntryIndex = 0;
-      });
-    }
-
-    protected onViewCategory(value: NavigationDrawCategoryEvent): void {
-      this.viewCategory(value.categoryIndex);
-    }
-
-    protected onUpdateCategory(value: HostsCategory): void {
-      this.currentCategory.name = value.name;
-      this.changed = true;
-    }
-
-    protected onAddCategory(): void {
-      this.hosts.categories.push({
-        name: 'New',
-        entries: [
-          {
-            active: false,
-            value: '',
-            name: 'Default'
-          }
-        ]
-      });
-
-      this.viewCategory(this.hosts.categories.length - 1);
-    }
-
-    protected onDeleteCategory(): void {
-      const categoryIndexToDelete = this.currentCategoryIndex;
-
-      if (this.currentCategoryIndex === this.hosts.categories.length - 1) {
-        this.viewCategory(this.currentCategoryIndex - 1);
-      }
-      this.$nextTick(() => {
-        this.hosts.categories.splice(categoryIndexToDelete, 1);
-        this.changed = true;
-      });
-    }
-
-    protected onViewHostsFile(): void {
-      this.currentAction = 'file-view';
-      this.$nextTick(() => {
-        this.hostsContent = convertHostsToFile(this.hosts);
-      });
-    }
-
-    protected onUpdateHostsFile(content: string): void {
-      this.hosts = convertFileToHosts(content);
-      this.changed = true;
     }
   }
 </script>

@@ -8,7 +8,10 @@ declare module 'winattr' {
   }
 
   export interface WinAttr {
+    get(path: string, callback: (err: any, data: WindowsFileAttributes) => void): void;
     getSync(path: string): WindowsFileAttributes;
+
+    set(path: string, attrib: WindowsFileAttributesOptions, callback: (err: any) => void): void;
     setSync(path: string, attrib: WindowsFileAttributesOptions);
   }
 

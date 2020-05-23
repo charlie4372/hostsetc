@@ -3,7 +3,7 @@
     <v-list-item
       v-if="showHeader"
       link
-      :input-value="active"
+      :input-value="category.id === selectedId"
       @click="onClick"
     >
       <v-list-item-content>
@@ -18,20 +18,15 @@
       @input="$emit('input', category)"
     >
       <app-navigation-drawer-entry
-        v-for="(entry, entryIndex) in category.entries"
-        :key="getKey(categoryIndex, entryIndex, 'entry-view')"
-        :active="selectedItem === getKey(categoryIndex, entryIndex, 'entry-view')"
-        :category-index="categoryIndex"
-        :entry-index="entryIndex"
+        v-for="entry in category.entries"
+        :key="entry.id"
         :entry="entry"
-        @entry-view="$emit('entry-view', $event)"
-        @entry-toggle-active="$emit('entry-toggle-active', $event)"
       />
     </draggable>
 
     <v-list-item
       link
-      @click="onNewEntry"
+      @click="onAddEntry"
     >
       <v-list-item-content>
         <v-list-item-title class="text--secondary">
@@ -43,7 +38,7 @@
     <v-list-item
       v-if="showNewCategory"
       link
-      @click="onNewCategory"
+      @click="onAddCategory"
     >
       <v-list-item-content>
         <v-list-item-title class="text--secondary">
@@ -60,11 +55,10 @@
   import Vue from 'vue';
   import Component from 'vue-class-component';
   import {Prop} from "vue-property-decorator";
-  import {HostsCategory} from "@common/hosts";
-  import { getKey } from './utils';
-  import { NavigationDrawCategoryEvent } from './types';
-  import AppNavigationDrawerEntry from "@renderer/views/app/AppNavigationDrawerEntry.vue";
+  import {Hosts, HostsCategory} from "@common/hosts";
+  import AppNavigationDrawerEntry from "@renderer/views/app/hosts-navigation-drawer/AppNavigationDrawerEntry.vue";
   import Draggable from "vuedraggable";
+  import {Mutation, State} from "vuex-class";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -74,13 +68,11 @@
     }
   })
   export default class AppNavigationDrawerCategory extends Vue {
-    protected readonly getKey = getKey
+    @State('selectedId', { namespace: 'app' })
+    protected readonly selectedId!: string | null;
 
-    @Prop({ type: Object, required: true })
-    protected readonly category!: HostsCategory;
-
-    @Prop({ type: Boolean })
-    protected readonly active!: boolean;
+    @State('hosts', { namespace: 'app' })
+    protected readonly hosts!: Hosts;
 
     @Prop({ type: Boolean })
     protected readonly showNewCategory!: boolean;
@@ -88,32 +80,43 @@
     @Prop({ type: Boolean, default: true })
     protected readonly showHeader!: boolean;
 
-    @Prop({ type: Number, required: true })
-    protected readonly categoryIndex!: number;
+    @Prop({ type: Object, default: true })
+    protected readonly category!: HostsCategory;
 
-    @Prop({ type: String })
-    protected readonly selectedItem!: string | null;
+    @Mutation('viewCategory', { namespace: 'app' })
+    protected viewCategory!: (id: string) => void;
+
+    @Mutation('addEntry', { namespace: 'app' })
+    protected addEntry!: (category: HostsCategory) => void;
+
+    @Mutation('addCategory', { namespace: 'app' })
+    protected addCategory!: () => void;
 
     protected onClick(): void {
-      this.$emit('category-view', {
-        categoryIndex: this.categoryIndex,
-      } as NavigationDrawCategoryEvent)
+      try {
+        this.viewCategory(this.category.id);
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Select failed.')
+      }
     }
 
-    protected onMoveEntry(): void {
-      return
+    protected onAddEntry(): void {
+      try {
+        this.addEntry(this.category);
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Add failed.');
+      }
     }
 
-    protected onNewEntry(): void {
-      this.$emit('entry-new', {
-        categoryIndex: this.categoryIndex,
-      } as NavigationDrawCategoryEvent)
-    }
-
-    protected onNewCategory(): void {
-      this.$emit('category-new', {
-        categoryIndex: this.categoryIndex,
-      } as NavigationDrawCategoryEvent)
+    protected onAddCategory(): void {
+      try {
+        this.addCategory();
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Add failed.');
+      }
     }
   }
 </script>

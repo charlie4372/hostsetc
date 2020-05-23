@@ -1,14 +1,3 @@
-export interface NavigationDrawCategoryEvent {
-  categoryIndex: number;
-}
-
-export interface NavigationDrawEntryEvent {
-  categoryIndex: number;
-  entryIndex: number;
-}
-
-export type NavigationDrawAction = 'entry-view'|'category-view'|'entry-new'|'category-new'|'file-view';
-
 /*
 This is a guessed interface.
 draggable doesn't have decent typerscript bindings so have added
