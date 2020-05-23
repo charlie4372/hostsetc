@@ -24,8 +24,7 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {getCategoryFromHosts, getEntryFromHosts, Hosts, HostsCategory, HostsEntry} from "@common/hosts";
-  import {Prop} from "vue-property-decorator";
+  import {getCategoryFromHosts, Hosts, HostsCategory} from "@common/hosts";
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
   import {Mutation, State} from "vuex-class";
 
@@ -65,10 +64,15 @@
         return;
       }
 
-      this.updateCategory({
-        ...this.category,
-        name: newValue
-      });
+      try {
+        this.updateCategory({
+          ...this.category,
+          name: newValue
+        });
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Update failed.');
+      }
     }
 
     protected onDelete(): void {
@@ -76,7 +80,11 @@
         return;
       }
 
-      this.deleteCategory(this.category);
+      try {
+        this.deleteCategory(this.category);
+      } catch (e) {
+        this.$toast.error('Update failed.');
+      }
     }
   }
 </script>

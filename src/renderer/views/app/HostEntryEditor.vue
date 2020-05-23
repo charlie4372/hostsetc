@@ -90,10 +90,15 @@
         return;
       }
 
-      this.updateEntry({
-        ...this.entry,
-        name: value
-      });
+      try {
+        this.updateEntry({
+          ...this.entry,
+          name: value
+        });
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Update failed.');
+      }
     }
 
     protected onUpdateValue(value: string): void {
@@ -101,15 +106,27 @@
         return;
       }
 
-      this.updateEntry({
-        ...this.entry,
-        value: value
-      });
+      try {
+        this.updateEntry({
+          ...this.entry,
+          value: value
+        });
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Update failed.');
+      }
     }
 
     protected onDelete(): void {
-      if (this.entry !== null) {
+      if (this.entry === null) {
+        return;
+      }
+
+      try {
         this.deleteEntry(this.entry);
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Delete failed.');
       }
     }
   }

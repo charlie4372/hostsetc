@@ -38,6 +38,7 @@
     <v-list-item
       v-if="showNewCategory"
       link
+      @click="onAddCategory"
     >
       <v-list-item-content>
         <v-list-item-title class="text--secondary">
@@ -88,12 +89,34 @@
     @Mutation('addEntry', { namespace: 'app' })
     protected addEntry!: (category: HostsCategory) => void;
 
+    @Mutation('addCategory', { namespace: 'app' })
+    protected addCategory!: () => void;
+
     protected onClick(): void {
-      this.viewCategory(this.category.id);
+      try {
+        this.viewCategory(this.category.id);
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Select failed.')
+      }
     }
 
     protected onAddEntry(): void {
-      this.addEntry(this.category);
+      try {
+        this.addEntry(this.category);
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Add failed.');
+      }
+    }
+
+    protected onAddCategory(): void {
+      try {
+        this.addCategory();
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Add failed.');
+      }
     }
   }
 </script>

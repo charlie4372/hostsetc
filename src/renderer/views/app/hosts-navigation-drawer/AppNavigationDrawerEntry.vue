@@ -42,7 +42,12 @@
     protected viewEntry!: (id: string) => void;
 
     protected onClick(): void {
-      this.viewEntry(this.entry.id);
+      try {
+        this.viewEntry(this.entry.id);
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Select failed.')
+      }
     }
   }
 </script>

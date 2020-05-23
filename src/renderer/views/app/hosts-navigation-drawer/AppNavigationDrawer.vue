@@ -91,29 +91,34 @@
     }
 
     protected set categories(value: HostsCategory[]) {
-      this.setHosts({
-        ...this.hosts,
-        categories: value
-      });
+      try {
+        this.setHosts({
+          ...this.hosts,
+          categories: value
+        });
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Failed to update.');
+      }
     }
 
     protected async onReload(): Promise<void> {
       try {
         await this.loadHostsFile();
-        this.$toast.success('Loaded the hosts file.', { queueable: true });
+        this.$toast.success('Reload succeeded.', { queueable: true });
       } catch (e) {
         console.log(e);
-        this.$toast.error('Failed to load the hosts file.', { queueable: true });
+        this.$toast.error('Reload failed.', { queueable: true });
       }
     }
 
     protected async onSave(): Promise<void> {
       try {
         await this.saveHostsFile()
-        this.$toast.success('Saved the hosts file.', { queueable: true });
+        this.$toast.success('Saved succeeded.', { queueable: true });
       } catch (e) {
         console.log(e);
-        this.$toast.error('Failed to save the hosts file.', { queueable: true });
+        this.$toast.error('Save failed.', { queueable: true });
       }
     }
   }
