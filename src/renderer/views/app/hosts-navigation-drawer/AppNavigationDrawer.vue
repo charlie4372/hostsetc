@@ -34,6 +34,7 @@
         <div>
           <v-btn
             block
+            :disabled="isFileBusy"
             @click="onReload"
           >
             Reload
@@ -42,6 +43,7 @@
         <div>
           <confirm-button
             :button-block="true"
+            :disabled-disabled="isFileBusy"
             button-color="primary"
             button-text="Save"
             content="This will update your hosts file."
@@ -89,6 +91,8 @@
     @Mutation('viewFile', { namespace: 'app' })
     protected viewFile!: () => void;
 
+    protected isFileBusy = false;
+
     protected get categories(): HostsCategory[] {
       return this.hosts.categories;
     }
@@ -106,22 +110,28 @@
     }
 
     protected async onReload(): Promise<void> {
+      this.isFileBusy = true;
       try {
         await this.loadHostsFile();
         this.$toast.success('Reload succeeded.', { queueable: true });
       } catch (e) {
         console.log(e);
         this.$toast.error('Reload failed.', { queueable: true });
+      } finally {
+        this.isFileBusy = false;
       }
     }
 
     protected async onSave(): Promise<void> {
+      this.isFileBusy = true;
       try {
         await this.saveHostsFile()
         this.$toast.success('Saved succeeded.', { queueable: true });
       } catch (e) {
         console.log(e);
         this.$toast.error('Save failed.', { queueable: true });
+      } finally {
+        this.isFileBusy = false;
       }
     }
 
