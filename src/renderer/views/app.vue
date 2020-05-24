@@ -6,7 +6,7 @@
       dark
     >
       <v-app-bar-nav-icon />
-      <v-toolbar-title>Host Etc</v-toolbar-title>
+      <v-toolbar-title>Host Etc - Beta</v-toolbar-title>
     </v-app-bar>
 
     <v-content
@@ -52,7 +52,8 @@
       color="indigo"
       app
     >
-      <span class="white--text">&copy; 2020 Charlie Broad</span>
+      <span class="white--text">v0.0.4</span>
+      <span class="white--text ml-4">&copy; 2020 Charlie Broad</span>
     </v-footer>
   </v-app>
 </template>
