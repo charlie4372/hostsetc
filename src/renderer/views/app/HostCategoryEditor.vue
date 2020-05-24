@@ -5,7 +5,7 @@
         <v-text-field
           label="Name"
           required
-          :value="value ? value.name : ''"
+          :value="category ? category.name : ''"
           @input="onUpdateName"
         />
       </div>
@@ -24,9 +24,9 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {HostsCategory} from "@common/hosts";
-  import {Prop} from "vue-property-decorator";
+  import {getCategoryFromHosts, Hosts, HostsCategory} from "@common/hosts";
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
+  import {Mutation, State} from "vuex-class";
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -35,21 +35,56 @@
     }
   })
   export default class HostsCategoryEditor extends Vue {
-    @Prop({ type: Object, default: null })
-    public readonly value!: HostsCategory | null;
+    @State('hosts', { namespace: 'app' })
+    protected hosts!: Hosts;
 
-    @Prop({type: Boolean})
-    public readonly canDelete!: boolean;
+    @State('selectedId', { namespace: 'app' })
+    protected readonly selectedId!: string | null;
 
-    protected onUpdateName(value: string): void {
-      this.$emit('input', {
-        ...this.value,
-        name: value
-      });
+    @Mutation('updateCategory', { namespace: 'app' })
+    protected updateCategory!: (value: HostsCategory) => void;
+
+    @Mutation('deleteCategory', { namespace: 'app' })
+    protected deleteCategory!: (value: HostsCategory) => void;
+
+    protected get category(): HostsCategory | null {
+      if (this.selectedId === null) {
+        return null;
+      }
+
+      return getCategoryFromHosts(this.hosts, this.selectedId);
+    }
+
+    protected get canDelete(): boolean {
+      return this.hosts.categories.length > 1;
+    }
+
+    protected onUpdateName(newValue: string): void {
+      if (this.category === null) {
+        return;
+      }
+
+      try {
+        this.updateCategory({
+          ...this.category,
+          name: newValue
+        });
+      } catch (e) {
+        console.log(e);
+        this.$toast.error('Update failed.');
+      }
     }
 
     protected onDelete(): void {
-      this.$emit('deleted');
+      if (this.category === null) {
+        return;
+      }
+
+      try {
+        this.deleteCategory(this.category);
+      } catch (e) {
+        this.$toast.error('Update failed.');
+      }
     }
   }
 </script>

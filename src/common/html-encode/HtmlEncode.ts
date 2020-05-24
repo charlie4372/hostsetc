@@ -1,5 +1,5 @@
 export class HtmlEncode {
-  private element: HTMLElement;
+  private readonly element: HTMLElement;
 
   public constructor() {
     this.element = window
@@ -8,55 +8,68 @@ export class HtmlEncode {
   }
 
   public encodeHtml(text: string): string {
-    this.element.innerText = text;
+    this.element.textContent = text;
     return this.element.innerHTML;
   }
 
-  public decodeHtml(value: string): string {
-    this.element.innerHTML = value;
+  public encodeTextFileToHtml(text: string): string {
+    if (text.length === 0) {
+      return '';
+    }
+
+    // This only needs to be rendered in one rendering engine. Keep it simple.
+    const lines = text
+      .split('\n');
 
     let output = '';
-    for (const node of this.element.childNodes) {
-      const element = node as HTMLElement;
-      if (element !== null && element.nodeName === 'div') {
-        if (output.length === 0) {
-          output += element.innerText;
-        } else {
-          output += '\r\n' + element.innerText;
+    const lastLineIndex = lines.length - 1;
+    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+      const line = lines[lineIndex];
+
+      if (line.length === 0) {
+        // Do not write out a line break for the last line break in the file.
+        if (lineIndex !== lastLineIndex) {
+          output += '<div><br></div>';
         }
+      } else {
+        output += '<div>' + this.encodeHtml(line) + '</div>';
       }
     }
 
     return output;
   }
 
-  public encodeTextFileToHtml(text: string): string {
-    const textWithStandardLineBreaks = text
-      .split('\n');
-
-    return textWithStandardLineBreaks.map((line): string => {
-      if (line.length === 0) {
-        return '<div><br></div>';
-      }
-      return '<div>' + this.encodeHtml(line) + '</div>';
-    })
-      .reduce((accumulator, current): string => {
-        return accumulator + current;
-      });
-  }
-
   public decodeHtmlToTextFile(value: string): string {
     this.element.innerHTML = value;
+    return this.decodeElementToTextFile(this.element);
+  }
 
+  private decodeElementToTextFile(element: HTMLElement): string {
     let output = '';
-    for (const node of this.element.childNodes) {
-      if (node.nodeName === 'DIV') {
-        const innerText = (node as HTMLElement).innerText
+    for (const node of element.childNodes) {
+      if (node.nodeName) {
+        const nodeName = node.nodeName.toLowerCase();
 
-        if (output.length === 0) {
-          output += innerText;
-        } else {
-          output += '\n' + innerText;
+        if (nodeName === '#text') {
+          // Copy the text directly over
+          output += (node as HTMLObjectElement).data;
+        } else if (nodeName === 'br') {
+          // Copy the line breaks over
+          output += '\n';
+        } else if (node.childNodes.length > 0) {
+          // This is not a node with text that we care about.
+          // Recurse into the children to convert them to text.
+          output += this.decodeElementToTextFile(node as HTMLElement);
+
+          // The following nodes are considered line breaks,
+          // however, if the output ends in a line break, ignore it.
+          // This is to protect against a bunch of line breaks getting added
+          // as all the tags close.
+          if (!output.endsWith('\n')) {
+            if (nodeName === 'div') {
+              output += '\n';
+            }
+          }
         }
       }
     }
