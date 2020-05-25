@@ -33,6 +33,18 @@
 
     protected mounted(): void {
       this.$refs.editableDiv.innerHTML = htmlEncode.encodeTextFileToHtml(this.value || '');
+
+      this.$refs.editableDiv.addEventListener('paste', function (event: ClipboardEvent) {
+        event.preventDefault();
+
+        if (!event.clipboardData) {
+          return
+        }
+
+        const content = event.clipboardData.getData('text/plain');
+
+        document.execCommand('inserttext', false, content);
+      });
     }
 
     @Watch('value')
