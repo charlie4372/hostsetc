@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@mdi/font": "^5.0.45",
+    "codemirror": "^5.54.0",
     "fs": "0.0.1-security",
     "source-map-support": "^0.5.16",
     "uuid": "^8.1.0",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.9.5",
     "@babel/preset-typescript": "^7.9.0",
+    "@types/codemirror": "0.0.95",
     "@types/jest": "^25.2.2",
     "@types/uuid": "^8.0.0",
     "@types/vuedraggable": "^2.23.0",
@@ -58,6 +60,9 @@
   "electronWebpack": {
     "renderer": {
       "webpackConfig": "webpack.renderer.additions.js"
-    }
+    },
+    "whiteListedModules": [
+      "vue-codemirror"
+    ]
   }
 }

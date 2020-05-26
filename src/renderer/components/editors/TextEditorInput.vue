@@ -1,7 +1,8 @@
 <template>
   <codemirror
+    class="text-editor-input"
     :value="value"
-    :options="{ mode: 'javascript' }"
+    :options="{ mode: 'hosts-file' }"
   />
 </template>
 
@@ -10,8 +11,6 @@
   import Component from 'vue-class-component';
   import {Prop} from 'vue-property-decorator';
   import { codemirror } from 'vue-codemirror';
-  import 'codemirror/lib/codemirror.css';
-  import CodeMirror from 'codemirror/lib/codemirror';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
@@ -25,21 +24,19 @@
 
     @Prop({type: String})
     public readonly label!: string | null | undefined;
-
-    public created(): void {
-      console.log('CodeMirror.modes', CodeMirror.modes)
-    }
   }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
   @import "~vuetify/src/styles/settings/colors";
 
   .text-editor-input {
-    outline: none;
-    font-family: "Roboto Mono", monospace;
-    overflow: auto;
-    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+
+    .CodeMirror {
+      flex: 1 1 auto
+    }
   }
 
   .text-editor-input::-webkit-scrollbar-track

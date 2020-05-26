@@ -3,8 +3,11 @@ import { vuetifyPlugin, vuetify } from '@renderer/plugins/vuetify';
 import '@mdi/font/css/materialdesignicons.min.css';
 import VuetifyToast from 'vuetify-toast-snackbar';
 import 'codemirror/mode/javascript/javascript.js';
+import 'codemirror/addon/mode/simple';
+import '@renderer/components/code-mirror/hosts';
 
 import '@renderer/styles/_index.scss';
+import 'codemirror/lib/codemirror.css';
 
 import App from '@renderer/views/app.vue';
 
