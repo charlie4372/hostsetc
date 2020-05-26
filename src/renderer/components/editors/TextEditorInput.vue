@@ -1,8 +1,10 @@
 <template>
   <codemirror
+    ref="codeMirror"
     class="text-editor-input"
     :value="value"
-    :options="{ mode: 'hosts-file' }"
+    :options="codeMirrorOptions"
+    @input="$emit('input', $event)"
   />
 </template>
 
@@ -24,6 +26,12 @@
 
     @Prop({type: String})
     public readonly label!: string | null | undefined;
+
+    protected codeMirrorOptions = {
+      mode: 'hosts-file',
+      scrollbarStyle: 'simple',
+      lineNumbers: true
+    }
   }
 </script>
 
@@ -35,27 +43,7 @@
     flex-direction: column;
 
     .CodeMirror {
-      flex: 1 1 auto
+      flex: 1 1 auto;
     }
-  }
-
-  .text-editor-input::-webkit-scrollbar-track
-  {
-    // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-    border-radius: 10px;
-    background-color: #fff;
-  }
-
-  .text-editor-input::-webkit-scrollbar
-  {
-    width: 12px;
-    background-color: map_get($grey, 'lighten-4');
-  }
-
-  .text-editor-input::-webkit-scrollbar-thumb
-  {
-    border-radius: 10px;
-    // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
-    background-color: map_get($grey, 'lighten-2');
   }
 </style>
