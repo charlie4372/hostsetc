@@ -1,7 +1,7 @@
 {
   "name": "hosts-etc",
   "version": "0.0.6",
-  "license": "GPL",
+  "license": "GPL-3.0-only",
   "author": "Charlie Broad",
   "scripts": {
     "dev": "electron-webpack dev",
@@ -16,6 +16,7 @@
     "source-map-support": "^0.5.16",
     "uuid": "^8.1.0",
     "vue": "^2.6.11",
+    "vue-codemirror": "^4.0.6",
     "vuedraggable": "^2.23.2",
     "vuetify": "^2.2.21",
     "vuetify-toast-snackbar": "^0.6.1",

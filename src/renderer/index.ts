@@ -1,7 +1,8 @@
 import Vue, { VNode } from 'vue'
 import { vuetifyPlugin, vuetify } from '@renderer/plugins/vuetify';
 import '@mdi/font/css/materialdesignicons.min.css';
-import VuetifyToast from 'vuetify-toast-snackbar'
+import VuetifyToast from 'vuetify-toast-snackbar';
+import 'codemirror/mode/javascript/javascript.js';
 
 import '@renderer/styles/_index.scss';
 
