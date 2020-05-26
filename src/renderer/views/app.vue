@@ -33,6 +33,7 @@
             class="w-100 h-100 d-flex flex-column"
             :hosts-path="hostsFilePath"
             :value="hostsFileContent"
+            @input="updateHostsFile"
           />
 
           <v-snackbar
@@ -104,6 +105,9 @@
 
     @Action('loadHostsFile', { namespace: 'app' })
     protected loadHostsFile!: () => Promise<void>;
+
+    @Mutation('updateHostsFile', { namespace: 'app' })
+    protected updateHostsFile!: (value: string) => void;
 
     public constructor() {
       super();

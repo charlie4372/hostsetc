@@ -12,7 +12,7 @@
         class="flex-grow-1 host-entry-editor__text"
         label="Content"
         :value="value"
-        @input="onUpdateEditor"
+        @input="$emit('input', $event)"
       />
     </v-card-text>
   </v-card>
@@ -40,12 +40,6 @@
 
     @Prop({type: String})
     public readonly hostsPath!: string;
-
-    protected onUpdateEditor(value: string): void {
-      this.$emit('input',
-        value
-      )
-    }
   }
 </script>
 

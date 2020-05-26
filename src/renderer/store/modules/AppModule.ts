@@ -3,6 +3,7 @@
 import {Module, VuexModule, Mutation, MutationAction, Action} from 'vuex-module-decorators'
 import {AppView} from "./types";
 import {
+  convertFileToHosts,
   convertHostsToFile, createNewCategory,
   createNewEntry,
   createNewHosts, getCategoryFromHosts,
@@ -130,6 +131,11 @@ export default class AppModule extends VuexModule {
     this.selectedId = this.hosts.categories[0].entries[0].id;
 
     this.hostsFileContent = convertHostsToFile(this.hosts);
+  }
+
+  @Mutation updateHostsFile(value: string): void {
+    this.hosts = convertFileToHosts(value);
+    this.hostsFileContent = value;
   }
 
   @MutationAction({ mutate: ['hosts', 'hostsFilePath', 'hostsFileContent', 'selectedId'] })
