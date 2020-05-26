@@ -1,59 +1,33 @@
 <template>
-  <div
-    ref="editableDiv"
-    class="text-editor-input"
-    contenteditable="true"
-    @blur="onChange"
+  <codemirror
+    :value="value"
+    :options="{ mode: 'javascript' }"
   />
 </template>
 
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {Prop, Watch} from "vue-property-decorator";
-  import { HtmlEncode } from "@common/html-encode";
-
-  const htmlEncode = new HtmlEncode();
+  import {Prop} from 'vue-property-decorator';
+  import { codemirror } from 'vue-codemirror';
+  import 'codemirror/lib/codemirror.css';
+  import CodeMirror from 'codemirror/lib/codemirror';
 
   // The @Component decorator indicates the class is a Vue component
   @Component({
     components: {
+      codemirror
     }
   })
   export default class TextEditorInput extends Vue {
-    readonly $refs!: {
-      editableDiv: HTMLElement;
-    }
-
     @Prop({type: String})
     public readonly value!: string | null | undefined;
 
     @Prop({type: String})
     public readonly label!: string | null | undefined;
 
-    protected mounted(): void {
-      this.$refs.editableDiv.innerHTML = htmlEncode.encodeTextFileToHtml(this.value || '');
-
-      this.$refs.editableDiv.addEventListener('paste', function (event: ClipboardEvent) {
-        event.preventDefault();
-
-        if (!event.clipboardData) {
-          return
-        }
-
-        const content = event.clipboardData.getData('text/plain');
-
-        document.execCommand('inserttext', false, content);
-      });
-    }
-
-    @Watch('value')
-    protected onContentChange(newValue: string | null): void {
-      this.$refs.editableDiv.innerHTML = htmlEncode.encodeTextFileToHtml(newValue || '');
-    }
-
-    protected onChange(): void {
-      this.$emit('input', htmlEncode.decodeHtmlToTextFile(this.$refs.editableDiv.innerHTML));
+    public created(): void {
+      console.log('CodeMirror.modes', CodeMirror.modes)
     }
   }
 </script>
