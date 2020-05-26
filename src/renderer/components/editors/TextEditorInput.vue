@@ -36,8 +36,6 @@
 </script>
 
 <style lang="scss">
-  @import "~vuetify/src/styles/settings/colors";
-
   .text-editor-input {
     display: flex;
     flex-direction: column;
