@@ -12,6 +12,7 @@
   import Vue from 'vue';
   import Component from 'vue-class-component';
   import {Prop} from 'vue-property-decorator';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   import { codemirror } from 'vue-codemirror';
 
   // The @Component decorator indicates the class is a Vue component

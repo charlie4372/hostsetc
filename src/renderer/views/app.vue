@@ -53,7 +53,7 @@
       color="indigo"
       app
     >
-      <span class="white--text">v0.0.6</span>
+      <span class="white--text">v0.0.7</span>
       <span class="white--text ml-4">&copy; 2020 Charlie Broad</span>
     </v-footer>
   </v-app>

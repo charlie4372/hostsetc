@@ -16,6 +16,5 @@ declare module 'winattr' {
   }
 
   const instance: WinAttr;
-
   export default instance;
 }

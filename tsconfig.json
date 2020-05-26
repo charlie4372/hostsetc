@@ -20,7 +20,11 @@
       "@renderer/*": ["renderer/*"],
       "@main/*": ["main/*"],
       "~/*": ["*"]
-    }
+    },
+    "typeRoots": [
+      "node_modules/@types",
+      "types"
+    ]
   },
   "include": [
     "src/**/*.ts",
