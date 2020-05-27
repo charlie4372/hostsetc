@@ -30,7 +30,6 @@
 
     protected codeMirrorOptions = {
       mode: 'hosts-file',
-      scrollbarStyle: 'simple',
       lineNumbers: true
     }
   }
