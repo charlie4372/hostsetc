@@ -1,6 +1,5 @@
 import {Hosts, HostsCategory, HostsEntry} from "@common/hosts/types";
 import { v4 as uuidv4 } from 'uuid';
-import app from "@renderer/views/app.vue";
 
 const ipV4Record = /^\s*#?\s*(?:[0-9]{1,3}\.){3}[0-9]{1,3}\s+([^#]+)/;
 const ipV6Record = /^\s*#?\s*(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}\s+([^#]+)/;

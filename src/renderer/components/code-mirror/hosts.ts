@@ -1,4 +1,4 @@
-import CodeMirror from 'codemirror/lib/codemirror';
+import CodeMirror from 'codemirror';
 
 // This is added via plugin
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

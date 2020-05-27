@@ -31,7 +31,7 @@
     protected codeMirrorOptions = {
       mode: 'hosts-file',
       lineNumbers: true,
-      lineSeparator: '\n'
+      scrollbarStyle: 'simple'
     }
   }
 </script>
