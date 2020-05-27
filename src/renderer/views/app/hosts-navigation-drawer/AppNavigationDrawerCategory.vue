@@ -1,7 +1,6 @@
 <template>
   <div>
     <v-list-item
-      v-if="showHeader"
       link
       :input-value="category.id === selectedId"
       @click="onClick"
@@ -14,8 +13,8 @@
     </v-list-item>
 
     <draggable
-      v-model="category.entries"
-      @input="$emit('input', category)"
+      :value="category.entries"
+      @input="$emit('entries-updated', $event)"
     >
       <app-navigation-drawer-entry
         v-for="entry in category.entries"
@@ -76,9 +75,6 @@
 
     @Prop({ type: Boolean })
     protected readonly showNewCategory!: boolean;
-
-    @Prop({ type: Boolean, default: true })
-    protected readonly showHeader!: boolean;
 
     @Prop({ type: Object, default: true })
     protected readonly category!: HostsCategory;

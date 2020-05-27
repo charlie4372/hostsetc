@@ -30,7 +30,8 @@
 
     protected codeMirrorOptions = {
       mode: 'hosts-file',
-      lineNumbers: true
+      lineNumbers: true,
+      lineSeparator: '\n'
     }
   }
 </script>

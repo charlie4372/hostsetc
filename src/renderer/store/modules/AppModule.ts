@@ -33,6 +33,7 @@ export default class AppModule extends VuexModule {
 
   @Mutation setHosts(value: Hosts): void {
     this.hosts = value;
+    this.hostsFileContent = convertHostsToFile(value);
   }
 
   @Mutation viewEntry(id: string): void {
