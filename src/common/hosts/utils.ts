@@ -1,5 +1,6 @@
 import {Hosts, HostsCategory, HostsEntry} from "@common/hosts/types";
 import { v4 as uuidv4 } from 'uuid';
+import app from "@renderer/views/app.vue";
 
 const ipV4Record = /^\s*#?\s*(?:[0-9]{1,3}\.){3}[0-9]{1,3}\s+([^#]+)/;
 const ipV6Record = /^\s*#?\s*(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}\s+([^#]+)/;
@@ -93,6 +94,14 @@ function renderEntryRecords(entry: HostsEntry, lineBreak: string): string {
   return lines.join(lineBreak);
 }
 
+function appendLine(current: string, toAppend: string, lineBreak = '\n'): string {
+  if (current.length === 0) {
+    return toAppend
+  }
+
+  return current + lineBreak + toAppend;
+}
+
 export function convertHostsToFile(hosts: Hosts, lineBreak = '\n'): string {
   // The first category, and the first entry do not get headers.
   // This is where the normal hosts file lives
@@ -101,21 +110,34 @@ export function convertHostsToFile(hosts: Hosts, lineBreak = '\n'): string {
   for (let categoryIndex = 0; categoryIndex < hosts.categories.length; categoryIndex++) {
     const category = hosts.categories[categoryIndex];
 
-    if (categoryIndex !== 0) {
-      content += `####Category:${category.name}####${lineBreak}`
-    }
+    content = appendLine(content, `####Category:${category.name}####`, lineBreak);
 
     for (let entryIndex = 0; entryIndex < category.entries.length; entryIndex++) {
       const entry = category.entries[entryIndex];
 
-      if (categoryIndex !== 0 || entryIndex !== 0) {
-        content += `####Entry:${entry.name}####${lineBreak}`
-      }
-      content += `${renderEntryRecords(entry, lineBreak)}${lineBreak}`
+      content = appendLine(content, `####Entry:${entry.name}####`, lineBreak);
+      content = appendLine(content, `${renderEntryRecords(entry, lineBreak)}`, lineBreak);
     }
   }
 
   return content;
+}
+
+function createDefaultCategory(): HostsCategory {
+  return {
+    entries: [],
+    id: uuidv4(),
+    name: 'Default'
+  }
+}
+
+function createDefaultEntry(): HostsEntry {
+  return {
+    id: uuidv4(),
+    name: 'Default',
+    value: '',
+    active: true
+  }
 }
 
 export function convertFileToHosts(content: string): Hosts {
@@ -124,16 +146,22 @@ export function convertFileToHosts(content: string): Hosts {
     .replace(/\r/g, '\n')
     .split('\n');
 
-  const hosts: Hosts = createNewHosts();
+  const hosts: Hosts = {
+    categories: []
+  };
 
-  let currentCategory: HostsCategory  = hosts.categories[0];
-  let currentEntry: HostsEntry = currentCategory.entries[0];
+  // Hosts files that haven't been seen before will not have hosts and category headers.
+  // These will be created when the content is hit.
+  // If there are headers, use them.
+  let currentCategory: HostsCategory | null = null;
+  let currentEntry: HostsEntry | null = null;
 
   for (const line of lines) {
     const startOfCategory = line.match(startOfCategoryBlock);
     const startOfEntry = line.match(startOfEntryBlock);
 
     if (startOfCategory !== null) {
+      // Category detected, make it the new current category.
       currentCategory = {
         id: uuidv4(),
         name: startOfCategory.groups ? startOfCategory.groups.name : '',
@@ -141,14 +169,38 @@ export function convertFileToHosts(content: string): Hosts {
       }
       hosts.categories.push(currentCategory);
     } else if (startOfEntry !== null) {
+      // Entry detected, make it the new current entry.
       currentEntry = {
         id: uuidv4(),
         name: startOfEntry.groups ? startOfEntry.groups.name : '',
         value: '',
         active: false
       }
+
+      // If there is no current category (ie. the entry is the first thing in the file)
+      // Create it and add the entry to it.
+      if (currentCategory === null) {
+        currentCategory = createDefaultCategory();
+        hosts.categories.push(currentCategory);
+      }
       currentCategory.entries.push(currentEntry)
     } else {
+      // The is actual content. Add it to the current entry.
+
+      // If there is no current entry, create an entry and add it to the current category.
+      if (currentEntry === null) {
+        currentEntry = createDefaultEntry()
+
+        // If there is no current category (ie. the entry is the first thing in the file)
+        // Create it and add the entry to it.
+        if (currentCategory === null) {
+          currentCategory = createDefaultCategory();
+          hosts.categories.push(currentCategory);
+        }
+        currentCategory.entries.push(currentEntry);
+      }
+
+      // Add the content to the entry.
       if (currentEntry.value.length === 0) {
         currentEntry.value = line
       } else {
