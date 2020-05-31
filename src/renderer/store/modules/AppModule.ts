@@ -3,10 +3,10 @@
 import {Module, VuexModule, Mutation, MutationAction, Action} from 'vuex-module-decorators'
 import {AppView} from "./types";
 import {
-  convertFileToHosts,
-  convertHostsToFile, createNewCategory,
+  createNewCategory,
   createNewEntry,
-  createNewHosts, getCategoryFromHosts,
+  createNewHosts,
+  getCategoryFromHosts,
   getCategoryWithEntryFromHosts,
   getEntryFromHosts,
   Hosts,
@@ -14,6 +14,7 @@ import {
   HostsEntry
 } from "@common/hosts";
 import {HostsFile} from "@common/hosts-file/HostsFile";
+import HostsSerialiser from "@common/hosts-serialiser";
 
 @Module({ namespaced: true })
 export default class AppModule extends VuexModule {
@@ -27,13 +28,17 @@ export default class AppModule extends VuexModule {
 
   public hostsFileContent = '';
 
+  private readonly hostsFile = new HostsFile();
+
+  private readonly hostsSerialiser = new HostsSerialiser();
+
   @Mutation setSelectedId(id: string | null): void {
     this.selectedId = id;
   }
 
   @Mutation setHosts(value: Hosts): void {
     this.hosts = value;
-    this.hostsFileContent = convertHostsToFile(value);
+    this.hostsFileContent = this.hostsSerialiser.serialise(value);
   }
 
   @Mutation viewEntry(id: string): void {
@@ -59,9 +64,9 @@ export default class AppModule extends VuexModule {
 
     currentEntry.name = value.name;
     currentEntry.active = value.active;
-    currentEntry.value = value.value;
+    currentEntry.content = value.content;
 
-    this.hostsFileContent = convertHostsToFile(this.hosts);
+    this.hostsFileContent = this.hostsSerialiser.serialise(this.hosts);
   }
 
   @Mutation deleteEntry(value: HostsEntry): void {
@@ -81,7 +86,7 @@ export default class AppModule extends VuexModule {
     const newIndex = index >= category.entries.length - 1 ? category.entries.length - 1 : index;
     this.selectedId = category.entries[newIndex].id;
 
-    this.hostsFileContent = convertHostsToFile(this.hosts);
+    this.hostsFileContent = this.hostsSerialiser.serialise(this.hosts);
   }
 
   @Mutation addEntry(category: HostsCategory): void {
@@ -96,7 +101,7 @@ export default class AppModule extends VuexModule {
     this.view = 'entry';
     this.selectedId = newEntry.id;
 
-    this.hostsFileContent = convertHostsToFile(this.hosts);
+    this.hostsFileContent = this.hostsSerialiser.serialise(this.hosts);
   }
 
   @Mutation addCategory(): void {
@@ -106,7 +111,7 @@ export default class AppModule extends VuexModule {
     this.view = 'category';
     this.selectedId = newCategory.id;
 
-    this.hostsFileContent = convertHostsToFile(this.hosts);
+    this.hostsFileContent = this.hostsSerialiser.serialise(this.hosts);
   }
 
   @Mutation updateCategory(value: HostsCategory): void {
@@ -117,7 +122,7 @@ export default class AppModule extends VuexModule {
 
     currentCategory.name = value.name;
 
-    this.hostsFileContent = convertHostsToFile(this.hosts);
+    this.hostsFileContent = this.hostsSerialiser.serialise(this.hosts);
   }
 
   @Mutation deleteCategory(value: HostsCategory): void {
@@ -131,31 +136,34 @@ export default class AppModule extends VuexModule {
     this.view = 'entry';
     this.selectedId = this.hosts.categories[0].entries[0].id;
 
-    this.hostsFileContent = convertHostsToFile(this.hosts);
+    this.hostsFileContent = this.hostsSerialiser.serialise(this.hosts);
   }
 
   @Mutation updateHostsFile(value: string): void {
-    this.hosts = convertFileToHosts(value);
+    this.hosts = this.hostsSerialiser.deserialise(value);
     this.hostsFileContent = value;
   }
 
   @MutationAction({ mutate: ['hosts', 'hostsFilePath', 'hostsFileContent', 'selectedId'] })
   async loadHostsFile(): Promise<{ hosts: Hosts; hostsFilePath: string; hostsFileContent: string; selectedId: string }> {
-    const hostsFile = new HostsFile();
-    await hostsFile.load();
+    await this.hostsFile.load();
+    // This should never occur.
+    if (this.hostsFile.hosts === null || this.hostsFile.content === null) {
+      throw new Error('Failed to load the hosts file.')
+    }
+
     return {
-      hosts: hostsFile.hosts || this.hosts,
-      hostsFilePath: hostsFile.path,
-      hostsFileContent: hostsFile.content || this.hostsFileContent,
-      selectedId: hostsFile.hosts ? hostsFile.hosts.categories[0].entries[0].id : this.hosts.categories[0].entries[0].id
+      hosts: this.hostsFile.hosts,
+      hostsFilePath: this.hostsFile.path,
+      hostsFileContent: this.hostsFile.content,
+      selectedId: this.hostsFile.hosts.categories[0].entries[0].id
     };
   }
 
   @Action
   async saveHostsFile(): Promise<void> {
     const hostsFile = new HostsFile();
-    hostsFile.hosts = this.hosts;
-    await hostsFile.save();
+    await hostsFile.save(this.hosts);
   }
 
 

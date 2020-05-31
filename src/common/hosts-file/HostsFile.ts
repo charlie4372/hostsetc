@@ -5,9 +5,9 @@ import util from 'util';
 
 import {
   Hosts,
-  convertHostsToFile, convertFileToHosts
 } from "@common/hosts";
 import process from 'process';
+import HostsSerialiser from "@common/hosts-serialiser";
 
 const readFile = util.promisify(fs.readFile) as (path: string, encoding: string) => Promise<string>;
 const writeFile = util.promisify(fs.writeFile) as (path: string, content: string) => Promise<void>;
@@ -17,12 +17,38 @@ const copyFile = util.promisify(fs.copyFile) as (source: string, target: string)
 const getAttrWin = util.promisify(winattr.get) as (path: string) => Promise<WindowsFileAttributes>;
 const setAttrWin = util.promisify(winattr.set) as (path: string, attr: WindowsFileAttributesOptions) => Promise<void>;
 
+/*
+The systems hosts file.
+ */
 export class HostsFile {
-  private readonly _hostsFilePaths: string[];
-  private _resolvedHostsFilePath: string | undefined;
-  public hosts: Hosts | null = null;
-  public content: string | null = null;
+  /*
+  The serialiser.
+   */
+  private readonly hostsSerialiser = new HostsSerialiser()
 
+  /*
+  The paths to search for the hosts file.
+   */
+  private readonly _hostsFilePaths: string[];
+
+  /*
+  The hosts file that was found and will be used for reading / writing.
+   */
+  private _path?: string;
+
+  /*
+  The Hosts entity that was last read / saved.
+   */
+  private _hosts?: Hosts;
+
+  /*
+  The hosts file content that was last read / saved.
+   */
+  private _content?: string;
+
+  /*
+  Creates a new instance.
+   */
   public constructor() {
     if (process.platform === 'win32') {
       this._hostsFilePaths = [
@@ -35,62 +61,105 @@ export class HostsFile {
     }
   }
 
+  /*
+  The path to the hosts file.
+  This is not set until load has been called.
+   */
   public get path(): string {
-    return this._resolvedHostsFilePath || '';
+    if (this._path === undefined) {
+      throw new Error('Hosts file not loaded.');
+    }
+    return this._path;
   }
 
+  /*
+  The Hosts entity that was last read / saved.
+   */
+  public get hosts(): Hosts {
+    if (this._hosts === undefined) {
+      throw new Error('Hosts file not loaded.');
+    }
+    return this._hosts;
+  }
+
+  /*
+  The hosts file content that was last read / saved.
+   */
+  public get content(): string {
+    if (this._content === undefined) {
+      throw new Error('Hosts file not loaded.');
+    }
+    return this._content;
+  }
+
+  /*
+  Loads the hosts file.
+  Pass in a path to load a specific hosts file.
+  After this is called, hosts, content and path will all be set.
+   */
   public async load(path?: string): Promise<void> {
     const hostsPath = path && fs.existsSync(path) ? path : this.getHostsPath();
     if (hostsPath === null) {
       throw new Error('Hosts file not found.');
     }
-    this.content = await readFile(hostsPath, 'utf-8');
-    this.hosts = convertFileToHosts(this.content);
+    this._path = hostsPath;
+    this._content = await readFile(hostsPath, 'utf-8');
+    this._hosts = this.hostsSerialiser.deserialise(this._content);
   }
 
-  public async save(): Promise<void> {
-    if (this.hosts === null) {
-      throw new Error('Hosts not set.');
+  /*
+  Saves a Hosts entity, or a hosts file.
+  Requires that load has been called.
+   */
+  public async save(value: Hosts | string): Promise<void> {
+    if (this._path === undefined) {
+      throw new Error('Hosts file not loaded.');
     }
 
-    const hostsPath = this.getHostsPath();
-    if (hostsPath === null) {
-      throw new Error('Hosts file not found.');
+    if (typeof value === "string") {
+      this._hosts = this.hostsSerialiser.deserialise(value)
+      this._content = value;
+    } else {
+      this._hosts = value;
+      this._content = this.hostsSerialiser.serialise(value);
     }
 
-    const backupPath = hostsPath + '.bak';
+    const backupPath = this.path + '.bak';
 
     if (fs.existsSync(backupPath)) {
       await this.setReadOnlyWin32(backupPath, false);
       await unlink(backupPath);
     }
 
-    await copyFile(hostsPath, backupPath);
+    await copyFile(this.path, backupPath);
 
-    const content = convertHostsToFile(this.hosts, os.EOL);
+    const content = this.hostsSerialiser.serialise(this._hosts, os.EOL);
 
-    const isReadonly = await this.isReadOnlyWin32(hostsPath);
+    const isReadonly = await this.isReadOnlyWin32(this.path);
     if (isReadonly) {
-      await this.setReadOnlyWin32(hostsPath, false);
+      await this.setReadOnlyWin32(this.path, false);
     }
 
-    await writeFile(hostsPath, content);
+    await writeFile(this.path, content);
 
     if (isReadonly) {
-      await this.setReadOnlyWin32(hostsPath, true);
+      await this.setReadOnlyWin32(this.path, true);
     }
   }
 
+  /*
+  Gets the path to the systems hosts file.
+   */
   private getHostsPath(): string | null {
-    if (this._resolvedHostsFilePath !== undefined) {
-      return this._resolvedHostsFilePath;
+    if (this._path !== undefined) {
+      return this._path;
     }
 
     for (const path of this._hostsFilePaths) {
       const pathToUse = path.replace(/%([^%]+)%/gi, (_,n) => process.env[n] || '')
 
       if (fs.existsSync(pathToUse)) {
-        this._resolvedHostsFilePath = pathToUse;
+        this._path = pathToUse;
         return pathToUse
       }
     }
@@ -98,6 +167,9 @@ export class HostsFile {
     return null;
   }
 
+  /*
+  Determines if a file is readonly on a Windows system.
+   */
   private async isReadOnlyWin32(path: string): Promise<boolean> {
     if (process.platform === 'win32') {
       const result = await getAttrWin(path);
@@ -107,6 +179,9 @@ export class HostsFile {
     return false;
   }
 
+  /*
+  Changes the read only flag on a Windows system.
+   */
   private async setReadOnlyWin32(path: string, isReadonly: boolean): Promise<void> {
     if (process.platform !== 'win32') {
       return;

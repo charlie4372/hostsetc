@@ -17,7 +17,7 @@
         ref="textEditor"
         class="flex-grow-1 host-entry-editor__text"
         label="Content"
-        :value="entry ? entry.value : ''"
+        :value="entry ? entry.content : ''"
         @input="onUpdateValue"
       />
       <div class="align-self-end mt-4">
@@ -117,7 +117,7 @@
       try {
         this.updateEntry({
           ...this.entry,
-          value: value
+          content: value
         });
       } catch (e) {
         console.log(e);
