@@ -6,7 +6,7 @@
       dark
     >
       <v-app-bar-nav-icon />
-      <v-toolbar-title>Host Etc - Beta</v-toolbar-title>
+      <v-toolbar-title>Host Etc - Developer Build</v-toolbar-title>
     </v-app-bar>
 
     <v-content
