@@ -1,5 +1,5 @@
 import {Hosts} from "@common/hosts";
-import {stripIds} from "./utils";
+import {stripIds} from "../utils";
 import HostsSerialiser from "@common/hosts-serialiser";
 import {v4 as uuidv4} from "uuid";
 

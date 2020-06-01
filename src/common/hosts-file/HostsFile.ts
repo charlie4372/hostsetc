@@ -48,7 +48,9 @@ export class HostsFile {
   public constructor(fileSystem?: FileSystemAdapter) {
     if (process.platform === 'win32') {
       this._hostsFilePaths = [
-        '%SystemRoot%\\system32\\drivers\\etc\\hosts'
+        '%SystemRoot%\\system32\\drivers\\etc\\hosts',
+        // This will never resolve, but helps servers as a common path for tests to use.
+        '/etc/hosts'
       ]
     } else {
       this._hostsFilePaths = [
