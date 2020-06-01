@@ -19,6 +19,9 @@ export function createNewHosts(): Hosts {
   };
 }
 
+/*
+Creates a new HostsEntry entity.
+ */
 export function createNewEntry(): HostsEntry {
   return {
     id: uuidv4(),
@@ -28,6 +31,9 @@ export function createNewEntry(): HostsEntry {
   };
 }
 
+/*
+Creates a new HostsCategory entity.
+ */
 export function createNewCategory(): HostsCategory {
   return {
     id: uuidv4(),
@@ -38,18 +44,24 @@ export function createNewCategory(): HostsCategory {
   }
 }
 
+/*
+Type guard for Hosts.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isHostsEntry(arg: any): arg is HostsEntry {
   if (arg === null || arg === undefined) {
     return false;
   }
 
-  return typeof arg.name === 'string' &&
+  return typeof arg.id === 'string' &&
     typeof arg.name === 'string' &&
     typeof arg.content === 'string' &&
     typeof arg.active === 'boolean';
 }
 
+/*
+Type guard for HostsCategory.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isHostsCategory(arg: any): arg is HostsCategory {
   if (arg === null || arg === undefined) {
@@ -63,6 +75,9 @@ export function isHostsCategory(arg: any): arg is HostsCategory {
     arg.entries.every((e: any) => isHostsEntry(e));
 }
 
+/*
+Gets HostsCategory entity that contains a HostsEntry with a given id from a Hosts entity.
+ */
 export function getCategoryWithEntryFromHosts(hosts: Hosts, id: string): HostsCategory | null {
   const items = hosts.categories.filter((category): boolean => {
     return category.entries.some((entry): boolean => {
@@ -72,6 +87,9 @@ export function getCategoryWithEntryFromHosts(hosts: Hosts, id: string): HostsCa
   return items.length > 0 ? items[0] : null;
 }
 
+/*
+Gets HostsEntry entity by its id from a Hosts entity.
+ */
 export function getEntryFromHosts(hosts: Hosts, id: string): HostsEntry | null {
   const category = getCategoryWithEntryFromHosts(hosts, id);
   if (category === null) {
@@ -85,6 +103,9 @@ export function getEntryFromHosts(hosts: Hosts, id: string): HostsEntry | null {
   return items.length > 0 ? items[0] : null;
 }
 
+/*
+Gets HostsCategory entity by its id from a Hosts entity.
+ */
 export function getCategoryFromHosts(hosts: Hosts, id: string): HostsCategory | null {
   const items = hosts.categories.filter((category): boolean => {
     return category.id === id;
