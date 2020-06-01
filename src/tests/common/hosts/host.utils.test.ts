@@ -4,7 +4,7 @@ import {
   createNewHosts,
   getCategoryFromHosts, getCategoryWithEntryFromHosts,
   getEntryFromHosts,
-  Hosts,
+  Hosts, HostsEntry, isHostsCategory, isHostsEntry,
 } from "@common/hosts";
 
 test('Does createNewHosts create a valid hosts entity.', () => {
@@ -141,4 +141,27 @@ test('Does getCategoryWithEntryFromHosts return null when the entry does not exi
 
   const foundCategory = getCategoryWithEntryFromHosts(hosts, entryToFind.id);
   expect(foundCategory).toBeNull();
+});
+
+test.each([
+  ['valid', createNewEntry(), true],
+  ['null', null, false],
+  ['undefined', undefined, false],
+  ['missing active', { id: '', name: '', content: '' }, false],
+  ['missing content', { id: '', name: '', active: false }, false],
+  ['missing name', { id: '', content: '', active: false }, false],
+  ['missing id', { name: '', content: '', active: false }, false]
+])('Does isHostsEntry: %s', (label: string, entry: any, expected: boolean) => {
+  expect(isHostsEntry(entry)).toBe(expected);
+});
+
+test.each([
+  ['valid', createNewCategory(), true],
+  ['null', null, false],
+  ['undefined', undefined, false],
+  ['missing entries', { id: '', name: '' }, false],
+  ['missing name', { id: '', content: '', entries: [] }, false],
+  ['missing id', { name: '', content: '', entries: [] }, false]
+])('Does isHostsCategory: %s', (label: string, entry: any, expected: boolean) => {
+  expect(isHostsCategory(entry)).toBe(expected);
 });
