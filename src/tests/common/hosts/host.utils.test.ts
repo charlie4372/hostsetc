@@ -2,9 +2,12 @@ import {
   createNewCategory,
   createNewEntry,
   createNewHosts,
-  getCategoryFromHosts, getCategoryWithEntryFromHosts,
+  getCategoryFromHosts,
+  getCategoryWithEntryFromHosts,
   getEntryFromHosts,
-  Hosts, HostsEntry, isHostsCategory, isHostsEntry,
+  Hosts,
+  isHostsCategory,
+  isHostsEntry,
 } from "@common/hosts";
 
 test('Does createNewHosts create a valid hosts entity.', () => {
@@ -151,7 +154,7 @@ test.each([
   ['missing content', { id: '', name: '', active: false }, false],
   ['missing name', { id: '', content: '', active: false }, false],
   ['missing id', { name: '', content: '', active: false }, false]
-])('Does isHostsEntry: %s', (label: string, entry: any, expected: boolean) => {
+])('Does isHostsEntry: %s', (_label: string, entry: any, expected: boolean) => {
   expect(isHostsEntry(entry)).toBe(expected);
 });
 
@@ -162,6 +165,6 @@ test.each([
   ['missing entries', { id: '', name: '' }, false],
   ['missing name', { id: '', content: '', entries: [] }, false],
   ['missing id', { name: '', content: '', entries: [] }, false]
-])('Does isHostsCategory: %s', (label: string, entry: any, expected: boolean) => {
+])('Does isHostsCategory: %s', (_label: string, entry: any, expected: boolean) => {
   expect(isHostsCategory(entry)).toBe(expected);
 });

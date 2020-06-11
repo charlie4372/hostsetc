@@ -64,7 +64,7 @@ export class TestFileSystemAdapter implements FileSystemAdapter {
   Reads a file as a string.
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  readFile(path: string, encoding: string): Promise<string> {
+  readFile(path: string, _encoding: string): Promise<string> {
     if (!this.existsSync(path)) {
       throw new Error('File not found.');
     }

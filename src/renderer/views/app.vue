@@ -2,7 +2,7 @@
   <v-app id="inspire">
     <v-app-bar
       app
-      color="indigo"
+      color="blue"
       dark
     >
       <v-app-bar-nav-icon />

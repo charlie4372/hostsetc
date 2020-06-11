@@ -54,7 +54,7 @@ export class StandardFileSystemAdapter implements FileSystemAdapter {
   This will always be false.
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public isReadonly(path: string): Promise<boolean> {
+  public isReadonly(_path: string): Promise<boolean> {
     return Promise.resolve(false);
   }
 
@@ -62,7 +62,7 @@ export class StandardFileSystemAdapter implements FileSystemAdapter {
   Sets the read only attribute on a file.
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public setReadonly(path: string, value: boolean): Promise<void> {
-    return Promise.resolve(undefined);
+  public setReadonly(_path: string, _value: boolean): Promise<void> {
+    return Promise.resolve();
   }
 }
