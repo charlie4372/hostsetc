@@ -156,7 +156,7 @@ export class HostsSerialiser {
   private isEntryContentActive(value: string): boolean {
     return value
       .split('\n')
-      .some(line => line.match(leadingComment) === null);
+      .some(line => this.isLineSignificant(line) && line.match(leadingComment) === null);
   }
 
   /*

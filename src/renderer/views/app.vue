@@ -50,7 +50,7 @@
       </div>
     </v-content>
     <v-footer
-      color="indigo"
+      color="blue"
       app
     >
       <span class="white--text">v0.0.7</span>
