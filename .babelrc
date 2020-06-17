@@ -1,14 +1,20 @@
 {
   "presets": [
-    "@babel/preset-env",
-    "@babel/preset-typescript"
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "electron": "8.2.0"
+        }
+      }
+    ],
+    [
+      "@babel/preset-typescript",
+      {
+        "targets": {
+          "electron": "8.2.0"
+        }
+      }
+    ]
   ]
-//  "env": {
-//    "test": {
-//      "plugins": [
-//        ["@babel/plugin-proposal-decorators", { "legacy": true }],
-//        ["@babel/plugin-proposal-class-properties", { "loose" : true }]
-//      ]
-//    }
-//  }
 }

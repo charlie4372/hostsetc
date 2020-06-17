@@ -23,12 +23,11 @@ export class TestFileSystemAdapter implements FileSystemAdapter {
   Stores the files.
    */
   private readonly _files: { [id: string]: TestFileSystemAdapterFile } = {};
-  // private _files: any;
 
   /*
   Copies a file.
    */
-  copyFile(source: string, target: string): Promise<void> {
+  public copyFile(source: string, target: string): Promise<void> {
     if (!this.existsSync(source)) {
       throw new Error('File not found.');
     }
@@ -45,14 +44,14 @@ export class TestFileSystemAdapter implements FileSystemAdapter {
   /*
   Determines if a path exists.
    */
-  existsSync(path: string): boolean {
+  public existsSync(path: string): boolean {
     return this._files[path] !== undefined;
   }
 
   /*
   Determines if a file is read only.
    */
-  isReadonly(path: string): Promise<boolean> {
+  public isReadonly(path: string): Promise<boolean> {
     if (!this.existsSync(path)) {
       throw new Error('File not found.');
     }
@@ -64,7 +63,7 @@ export class TestFileSystemAdapter implements FileSystemAdapter {
   Reads a file as a string.
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  readFile(path: string, _encoding: string): Promise<string> {
+  public readFile(path: string, _encoding: string): Promise<string> {
     if (!this.existsSync(path)) {
       throw new Error('File not found.');
     }
@@ -75,7 +74,7 @@ export class TestFileSystemAdapter implements FileSystemAdapter {
   /*
   Sets the read only attribute on a file.
    */
-  setReadonly(path: string, value: boolean): Promise<void> {
+  public setReadonly(path: string, value: boolean): Promise<void> {
     if (!this.existsSync(path)) {
       throw new Error('File not found.');
     }
@@ -88,7 +87,7 @@ export class TestFileSystemAdapter implements FileSystemAdapter {
   /*
   Unlinks a file.
    */
-  unlink(path: string): Promise<void> {
+  public unlink(path: string): Promise<void> {
     if (!this.existsSync(path)) {
       throw new Error('File not found.');
     }
@@ -100,7 +99,7 @@ export class TestFileSystemAdapter implements FileSystemAdapter {
   /*
   Writes a string to a file.
    */
-  async writeFile(path: string, content: string): Promise<void> {
+  public async writeFile(path: string, content: string): Promise<void> {
     if (this.existsSync(path) && (await this.isReadonly(path))) {
       throw new Error('File is read only.')
     }

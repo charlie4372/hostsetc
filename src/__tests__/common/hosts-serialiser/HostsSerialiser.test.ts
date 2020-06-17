@@ -78,7 +78,7 @@ test('Does deserialise read a file with a category header.', () => {
   });
 });
 
-test('Does deserialise detect an active entry.', () => {
+test('Does deserialise detect an active entry (without trailing empty line).', () => {
   const source = '####Category:Cat1####\n' +
     '####Entry:Entry1A####\n' +
     '# new file\n' +
@@ -105,7 +105,35 @@ test('Does deserialise detect an active entry.', () => {
   });
 });
 
-test('Does serialise preserve an active entry.', () => {
+test('Does deserialise detect an active entry (with trailing empty line).', () => {
+  const source = '####Category:Cat1####\n' +
+    '####Entry:Entry1A####\n' +
+    '# new file\n' +
+    '127.0.0.1 localhost\n' +
+    '127.0.0.1 one.com\n' +
+    '';
+
+  const result = new HostsSerialiser().deserialise(source);
+  const resultWithoutIds = stripIds(result);
+  expect(resultWithoutIds).toEqual({
+    "categories": [
+      {
+        "entries": [
+          {
+            "active": true,
+            "id": "",
+            "name": "Entry1A",
+            "content": "# new file\n127.0.0.1 localhost\n127.0.0.1 one.com\n"
+          }
+        ],
+        "id": "",
+        "name": "Cat1"
+      }
+    ]
+  });
+});
+
+test('Does serialise preserve an active entry (without trailing empty line).', () => {
   const source = {
     "categories": [
       {
@@ -131,7 +159,34 @@ test('Does serialise preserve an active entry.', () => {
     '127.0.0.1 one.com');
 });
 
-test('Does deserialise detect an inactive entry.', () => {
+test('Does serialise preserve an active entry (with trailing empty line).', () => {
+  const source = {
+    "categories": [
+      {
+        "entries": [
+          {
+            "active": true,
+            "id": "",
+            "name": "Entry1A",
+            "content": "# new file\n127.0.0.1 localhost\n127.0.0.1 one.com\n"
+          }
+        ],
+        "id": "",
+        "name": "Cat1"
+      }
+    ]
+  };
+
+  const result = new HostsSerialiser().serialise(source);
+  expect(result).toEqual('####Category:Cat1####\n' +
+    '####Entry:Entry1A####\n' +
+    '# new file\n' +
+    '127.0.0.1 localhost\n' +
+    '127.0.0.1 one.com\n' +
+    '');
+});
+
+test('Does deserialise detect an inactive entry (without trailing empty line).', () => {
   const source = '####Category:Cat1####\n' +
     '####Entry:Entry1A####\n' +
     '# new file\n' +
@@ -158,7 +213,35 @@ test('Does deserialise detect an inactive entry.', () => {
   });
 });
 
-test('Does serialise preserve an inactive entry.', () => {
+test('Does deserialise detect an inactive entry (with trailing empty line).', () => {
+  const source = '####Category:Cat1####\n' +
+    '####Entry:Entry1A####\n' +
+    '# new file\n' +
+    '#127.0.0.1 localhost\n' +
+    '#127.0.0.1 one.com\n' +
+    '';
+
+  const result = new HostsSerialiser().deserialise(source);
+  const resultWithoutIds = stripIds(result);
+  expect(resultWithoutIds).toEqual({
+    "categories": [
+      {
+        "entries": [
+          {
+            "active": false,
+            "id": "",
+            "name": "Entry1A",
+            "content": "# new file\n127.0.0.1 localhost\n127.0.0.1 one.com\n"
+          }
+        ],
+        "id": "",
+        "name": "Cat1"
+      }
+    ]
+  });
+});
+
+test('Does serialise preserve an inactive entry (without trailing empty line).', () => {
   const source = {
     "categories": [
       {
@@ -167,7 +250,7 @@ test('Does serialise preserve an inactive entry.', () => {
             "active": false,
             "id": "",
             "name": "Entry1A",
-            "content": "# new file\n127.0.0.1 localhost\n127.0.0.1 one.com"
+            "content": "# new file\n127.0.0.1 localhost\n127.0.0.1 one.com\n"
           }
         ],
         "id": "",
@@ -181,7 +264,35 @@ test('Does serialise preserve an inactive entry.', () => {
     '####Entry:Entry1A####\n' +
     '# new file\n' +
     '#127.0.0.1 localhost\n' +
-    '#127.0.0.1 one.com');
+    '#127.0.0.1 one.com\n' +
+    '');
+});
+
+test('Does serialise preserve an inactive entry (with trailing empty line.', () => {
+  const source = {
+    "categories": [
+      {
+        "entries": [
+          {
+            "active": false,
+            "id": "",
+            "name": "Entry1A",
+            "content": "# new file\n127.0.0.1 localhost\n127.0.0.1 one.com\n"
+          }
+        ],
+        "id": "",
+        "name": "Cat1"
+      }
+    ]
+  };
+
+  const result = new HostsSerialiser().serialise(source);
+  expect(result).toEqual('####Category:Cat1####\n' +
+    '####Entry:Entry1A####\n' +
+    '# new file\n' +
+    '#127.0.0.1 localhost\n' +
+    '#127.0.0.1 one.com\n' +
+    '');
 });
 
 test('Does deserialise detect a partially active entry (entry was active).', () => {
