@@ -11,7 +11,7 @@
           :key="category.id"
           :category="category"
           :show-new-category="categoryIndex === 0"
-          :show-header="categoryIndex !== 0"
+          @entries-updated="onEntriesUpdated(categoryIndex, $event)"
         />
 
         <v-divider />
@@ -58,7 +58,7 @@
 <script lang="ts">
   import Vue from 'vue';
   import Component from 'vue-class-component';
-  import {Hosts, HostsCategory} from "@common/hosts";
+  import {Hosts, HostsCategory, HostsEntry} from "@common/hosts";
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
   import draggable from 'vuedraggable';
   import AppNavigationDrawerCategory from "@renderer/views/app/hosts-navigation-drawer/AppNavigationDrawerCategory.vue";
@@ -109,6 +109,15 @@
       }
     }
 
+    protected onEntriesUpdated(categoryIndex: number, entries: HostsEntry[]): void {
+      this.hosts.categories[categoryIndex].entries.length = 0;
+      for (const entry of entries) {
+        this.hosts.categories[categoryIndex].entries.push(entry)
+      }
+
+      this.setHosts(this.hosts);
+    }
+
     protected async onReload(): Promise<void> {
       this.isFileBusy = true;
       try {
@@ -145,7 +154,3 @@
     }
   }
 </script>
-
-<style scoped lang="scss">
-
-</style>

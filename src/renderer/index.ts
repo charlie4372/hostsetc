@@ -4,11 +4,11 @@ import '@mdi/font/css/materialdesignicons.min.css';
 import VuetifyToast from 'vuetify-toast-snackbar';
 import 'codemirror/addon/mode/simple';
 import 'codemirror/addon/scroll/simplescrollbars';
-import 'codemirror/addon/scroll/simplescrollbars.css';
 import '@renderer/components/code-mirror/hosts';
 
 import '@renderer/styles/_index.scss';
 import 'codemirror/lib/codemirror.css';
+import 'codemirror/addon/scroll/simplescrollbars.css';
 
 import App from '@renderer/views/app.vue';
 
