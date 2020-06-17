@@ -2,11 +2,11 @@
   <v-app id="inspire">
     <v-app-bar
       app
-      color="indigo"
+      color="blue"
       dark
     >
       <v-app-bar-nav-icon />
-      <v-toolbar-title>Host Etc - Beta</v-toolbar-title>
+      <v-toolbar-title>Host Etc - Developer Build</v-toolbar-title>
     </v-app-bar>
 
     <v-content
@@ -50,7 +50,7 @@
       </div>
     </v-content>
     <v-footer
-      color="indigo"
+      color="blue"
       app
     >
       <span class="white--text">v0.0.7</span>
