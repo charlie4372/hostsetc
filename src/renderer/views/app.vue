@@ -6,7 +6,7 @@
       dark
     >
       <v-app-bar-nav-icon />
-      <v-toolbar-title>Host Etc - Developer Build</v-toolbar-title>
+      <v-toolbar-title>Host Etc</v-toolbar-title>
     </v-app-bar>
 
     <v-content
@@ -53,7 +53,7 @@
       color="blue"
       app
     >
-      <span class="white--text">v0.0.7</span>
+      <span class="white--text">v{{version}}</span>
       <span class="white--text ml-4">&copy; 2020 Charlie Broad</span>
     </v-footer>
   </v-app>
@@ -87,6 +87,7 @@
     protected notificationVisible = false;
     protected notificationText = '';
     protected notificationColor = 'success';
+    protected version = process.env.PACKAGE_VERSION;
 
     @State('view', { namespace: 'app' })
     protected view!: AppView;
