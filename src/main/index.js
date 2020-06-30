@@ -17,6 +17,12 @@ function createMainWindow() {
 
   if (isDevelopment) {
     window.webContents.openDevTools()
+  // } else {
+  //   // Needed to use dev tools while running in escalated mode (Windows 10)
+  //   // https://github.com/electron/electron/issues/20069
+  //   const devtools = new BrowserWindow()
+  //   window.webContents.setDevToolsWebContents(devtools.webContents)
+  //   window.webContents.openDevTools({ mode: 'detach' })
   }
 
   if (isDevelopment) {

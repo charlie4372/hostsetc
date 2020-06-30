@@ -302,6 +302,8 @@ export default class EditorModule extends VuexModule {
       await hostsFile.load(this.hostsFilePath);
       await hostsFile.save(this.hosts);
     } catch (e) {
+      throw e;
+    } finally {
       this.context.commit('setIsSaving', false);
     }
   }
