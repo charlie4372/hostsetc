@@ -25,7 +25,7 @@
   import Vue from 'vue';
   import Component from 'vue-class-component';
   import {getCategoryFromHosts, Hosts, HostsCategory} from "@common/hosts";
-  import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
+  import {ConfirmButton} from "@renderer/components/confirm";
   import {Mutation, State} from "vuex-class";
 
   // The @Component decorator indicates the class is a Vue component

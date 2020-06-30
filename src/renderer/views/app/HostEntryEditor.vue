@@ -37,7 +37,7 @@
   import Component from 'vue-class-component';
   import { Prop } from 'vue-property-decorator';
   import TextEditorInput from '@renderer/components/editors/TextEditorInput.vue';
-  import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
+  import {ConfirmButton} from "@renderer/components/confirm";
   import {
     getCategoryWithEntryFromHosts,
     getEntryFromHosts,

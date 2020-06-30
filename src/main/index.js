@@ -1,8 +1,9 @@
 'use strict'
 
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import * as path from 'path'
 import { format as formatUrl } from 'url'
+import {Messages} from "../common/messages";
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -11,7 +12,8 @@ let mainWindow
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function createMainWindow() {
-  const window = new BrowserWindow({webPreferences: {nodeIntegration: true}})
+  const window = new BrowserWindow({webPreferences: {nodeIntegration: true}});
+  let closing = false;
 
   if (isDevelopment) {
     window.webContents.openDevTools()
@@ -38,6 +40,27 @@ function createMainWindow() {
       window.focus()
     })
   })
+
+  window.on('close', function(e) {
+    // Send the renderer a request to prompt the user to confirm quitting.
+    // When closing is true, (set below) then  we want to exit.
+    if (closing) {
+      return;
+    }
+
+    window.webContents.send(Messages.promptQuit);
+    // This prevents the window from closing.
+    e.preventDefault();
+  });
+
+  // When we hear the quit message, close the app.
+  ipcMain.on(Messages.quit, (event) => {
+    if (event.sender === window.webContents) {
+      // Setting closing to true tells the on('close') to let the app close.
+      closing = true;
+      window.close();
+    }
+  });
 
   return window
 }

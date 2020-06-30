@@ -34,7 +34,7 @@
         <div>
           <v-btn
             block
-            :disabled="isFileBusy"
+            :disabled="isLoading"
             @click="onReload"
           >
             Reload
@@ -43,7 +43,7 @@
         <div>
           <confirm-button
             :button-block="true"
-            :disabled-disabled="isFileBusy"
+            :disabled="isSaving"
             button-color="primary"
             button-text="Save"
             content="This will update your hosts file."
@@ -59,7 +59,7 @@
   import Vue from 'vue';
   import Component from 'vue-class-component';
   import {Hosts, HostsCategory, HostsEntry} from "@common/hosts";
-  import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
+  import { ConfirmButton } from "@renderer/components/confirm";
   import draggable from 'vuedraggable';
   import AppNavigationDrawerCategory from "@renderer/views/app/hosts-navigation-drawer/AppNavigationDrawerCategory.vue";
   import {Action, Mutation, State} from "vuex-class";
@@ -91,7 +91,9 @@
     @Mutation('viewFile', { namespace: 'editor' })
     protected viewFile!: () => void;
 
-    protected isFileBusy = false;
+    protected isLoading = false;
+
+    protected isSaving = false;
 
     protected get categories(): HostsCategory[] {
       return this.hosts.categories;
@@ -119,7 +121,7 @@
     }
 
     protected async onReload(): Promise<void> {
-      this.isFileBusy = true;
+      this.isLoading = true;
       try {
         await this.loadHostsFile();
         this.$toast.success('Reload succeeded.');
@@ -127,12 +129,12 @@
         console.log(e);
         this.$toast.error('Reload failed.');
       } finally {
-        this.isFileBusy = false;
+        this.isLoading = false;
       }
     }
 
     protected async onSave(): Promise<void> {
-      this.isFileBusy = true;
+      this.isSaving = true;
       try {
         await this.saveHostsFile()
         this.$toast.success('Saved succeeded.');
@@ -140,7 +142,7 @@
         console.log(e);
         this.$toast.error('Save failed.');
       } finally {
-        this.isFileBusy = false;
+        this.isSaving = false;
       }
     }
 

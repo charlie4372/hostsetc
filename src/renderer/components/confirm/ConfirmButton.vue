@@ -2,7 +2,7 @@
   <v-dialog
     v-model="visible"
     persistent
-    max-width="290"
+    max-width="500"
   >
     <template
       v-if="buttonVisible"
@@ -18,9 +18,7 @@
       </v-btn>
     </template>
     <v-card>
-      <v-card-title
-        class="headline"
-      >
+      <v-card-title class="headline">
         {{ title }}
       </v-card-title>
       <v-card-text>
@@ -50,10 +48,7 @@
   import { Prop, Watch } from 'vue-property-decorator';
 
   // The @Component decorator indicates the class is a Vue component
-  @Component({
-    components: {
-    }
-  })
+  @Component({})
   export default class ConfirmButton extends Vue {
     protected visible = false;
 
@@ -107,7 +102,3 @@
     }
   }
 </script>
-
-<style scoped lang="scss">
-
-</style>

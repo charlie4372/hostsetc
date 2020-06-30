@@ -30,7 +30,7 @@
     }
   })
   export default class AppNavigationDrawerEntry extends Vue {
-    @State('selectedId', { namespace: 'app' })
+    @State('selectedId', { namespace: 'editor' })
     protected readonly selectedId!: string | null;
 
     @Prop({ type: Object, required: true })
@@ -39,10 +39,10 @@
     @Prop({ type: Boolean, default: true })
     protected readonly visible!: boolean;
 
-    @Mutation('viewEntry', { namespace: 'app' })
+    @Mutation('viewEntry', { namespace: 'editor' })
     protected viewEntry!: (id: string) => void;
 
-    @Mutation('updateEntry', { namespace: 'app' })
+    @Mutation('updateEntry', { namespace: 'editor' })
     protected updateEntry!: (value: HostsEntry) => void;
 
     protected onChangeEntryActive(newValue: boolean): void {
