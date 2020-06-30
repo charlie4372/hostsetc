@@ -1,4 +1,4 @@
-var path = require('path')
+var path = require('path');
 
 // This is pulled from electron-webpack build output.
 // Using it to mimic the electron build process for WebStorm and jest
