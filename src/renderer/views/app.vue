@@ -70,7 +70,7 @@
   import AppNavigationDrawer from "@renderer/views/app/hosts-navigation-drawer/AppNavigationDrawer.vue";
   import HostFileEditor from "@renderer/views/app/HostFileEditor.vue";
   import ConfirmButton from "@renderer/components/confirm-button/ConfirmButton.vue";
-  import {AppView} from "@renderer/store/modules/types";
+  import {EditorView} from "@renderer/store/modules/editor/types";
   import {Mutation, State, Action} from 'vuex-class';
 
   // The @Component decorator indicates the class is a Vue component
@@ -88,25 +88,25 @@
     protected notificationText = '';
     protected notificationColor = 'success';
 
-    @State('view', { namespace: 'app' })
-    protected view!: AppView;
+    @State('view', { namespace: 'editor' })
+    protected view!: EditorView;
 
-    @State('hosts', { namespace: 'app' })
+    @State('hosts', { namespace: 'editor' })
     protected hosts!: Hosts;
 
-    @State('hostsFilePath', { namespace: 'app' })
+    @State('hostsFilePath', { namespace: 'editor' })
     protected hostsFilePath!: string;
 
-    @State('hostsFileContent', { namespace: 'app' })
+    @State('hostsFileContent', { namespace: 'editor' })
     protected hostsFileContent!: string;
 
-    @Mutation('viewEntry', { namespace: 'app' })
+    @Mutation('viewEntry', { namespace: 'editor' })
     protected viewEntry!: (id: string) => void;
 
-    @Action('loadHostsFile', { namespace: 'app' })
+    @Action('loadHostsFile', { namespace: 'editor' })
     protected loadHostsFile!: () => Promise<void>;
 
-    @Mutation('updateHostsFile', { namespace: 'app' })
+    @Mutation('updateHostsFile', { namespace: 'editor' })
     protected updateHostsFile!: (value: string) => void;
 
     public constructor() {

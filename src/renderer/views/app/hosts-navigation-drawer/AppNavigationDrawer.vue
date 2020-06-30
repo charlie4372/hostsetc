@@ -73,22 +73,22 @@
     }
   })
   export default class AppNavigationDrawer extends Vue {
-    @State('hosts', { namespace: 'app' })
+    @State('hosts', { namespace: 'editor' })
     protected hosts!: Hosts;
 
-    @Mutation('setHosts', { namespace: 'app' })
+    @Mutation('setHosts', { namespace: 'editor' })
     protected setHosts!: (value: Hosts) => void;
 
-    @Action('loadHostsFile', { namespace: 'app' })
+    @Action('loadHostsFile', { namespace: 'editor' })
     protected loadHostsFile!: () => Promise<void>;
 
-    @Action('saveHostsFile', { namespace: 'app' })
+    @Action('saveHostsFile', { namespace: 'editor' })
     protected saveHostsFile!: () => Promise<void>;
 
     @Mutation('add', { namespace: 'notifications' })
     protected addNotification!: (notification: Notification) => void;
 
-    @Mutation('viewFile', { namespace: 'app' })
+    @Mutation('viewFile', { namespace: 'editor' })
     protected viewFile!: () => void;
 
     protected isFileBusy = false;

@@ -1,7 +1,7 @@
 // https://medium.com/coding-blocks/writing-vuex-modules-in-neat-typescript-classes-9bf7b505e7b5
 
 import {Module, VuexModule, Mutation, Action} from 'vuex-module-decorators'
-import {AppView} from "./types";
+import {EditorView} from "./types";
 import {
   createNewCategory,
   createNewEntry,
@@ -24,7 +24,7 @@ const hostsSerialiser = new HostsSerialiser();
 /*
 Updates the hostsFileContent if the user is currently viewing it.
  */
-function updateHostsFileContentIfBeingViewed(module: AppModule): void {
+function updateHostsFileContentIfBeingViewed(module: EditorModule): void {
   if (module.view === 'file') {
     module.hostsFileContent = hostsSerialiser.serialise(module.hosts);
   }
@@ -33,7 +33,7 @@ function updateHostsFileContentIfBeingViewed(module: AppModule): void {
 /*
 Sets the current view to a given entry.
  */
-function viewEntry(module: AppModule, id: string): void {
+function viewEntry(module: EditorModule, id: string): void {
   module.view = 'entry';
   module.selectedId = id;
 }
@@ -41,17 +41,22 @@ function viewEntry(module: AppModule, id: string): void {
 /*
 Sets the current view to a given category.
  */
-function viewCategory(module: AppModule, id: string): void {
+function viewCategory(module: EditorModule, id: string): void {
   module.view = 'category'
   module.selectedId = id;
 }
 
 /*
-Store for the app data.
+Store for the editor data.
 If the scope increases much more, this will need a rethink.
  */
 @Module({ namespaced: true })
-export default class AppModule extends VuexModule {
+export default class EditorModule extends VuexModule {
+  /*
+  Determines if the application can be exited.
+   */
+  public isSaving = false;
+
   /*
   The selectedId.
    */
@@ -60,7 +65,7 @@ export default class AppModule extends VuexModule {
   /*
   The current view.
    */
-  public view: AppView = "entry";
+  public view: EditorView = "entry";
 
   /*
   The hosts.
@@ -79,6 +84,14 @@ export default class AppModule extends VuexModule {
   The path to the hosts file.
    */
   public hostsFilePath = '/etc/hosts';
+
+  /*
+  Sets the isSaving.
+   */
+  @Mutation
+  public setIsSaving(value: boolean): void {
+    this.isSaving = value;
+  }
 
   /*
   Sets the selectedId.
@@ -282,8 +295,21 @@ export default class AppModule extends VuexModule {
    */
   @Action
   public async saveHostsFile(): Promise<void> {
-    const hostsFile = new HostsFile();
-    await hostsFile.load(this.hostsFilePath);
-    await hostsFile.save(this.hosts);
+    this.context.commit('setIsSaving', true);
+
+    try {
+      const hostsFile = new HostsFile();
+      await hostsFile.load(this.hostsFilePath);
+      await hostsFile.save(this.hosts);
+    } catch (e) {
+      this.context.commit('setIsSaving', false);
+    }
+  }
+
+  /*
+  Determines if module is doing something where the application cannot be closed.
+   */
+  public get canApplicationExit(): boolean {
+    return !this.isSaving;
   }
 }

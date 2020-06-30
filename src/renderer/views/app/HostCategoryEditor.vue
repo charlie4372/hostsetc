@@ -35,16 +35,16 @@
     }
   })
   export default class HostsCategoryEditor extends Vue {
-    @State('hosts', { namespace: 'app' })
+    @State('hosts', { namespace: 'editor' })
     protected hosts!: Hosts;
 
-    @State('selectedId', { namespace: 'app' })
+    @State('selectedId', { namespace: 'editor' })
     protected readonly selectedId!: string | null;
 
-    @Mutation('updateCategory', { namespace: 'app' })
+    @Mutation('updateCategory', { namespace: 'editor' })
     protected updateCategory!: (value: HostsCategory) => void;
 
-    @Mutation('deleteCategory', { namespace: 'app' })
+    @Mutation('deleteCategory', { namespace: 'editor' })
     protected deleteCategory!: (value: HostsCategory) => void;
 
     protected get category(): HostsCategory | null {

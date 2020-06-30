@@ -55,19 +55,19 @@
     }
   })
   export default class HostEntryEditor extends Vue {
-    @State('hosts', { namespace: 'app' })
+    @State('hosts', { namespace: 'editor' })
     protected hosts!: Hosts;
 
-    @State('selectedId', { namespace: 'app' })
+    @State('selectedId', { namespace: 'editor' })
     protected readonly selectedId!: string | null;
 
     @Prop({type: Boolean})
     public readonly nameReadonly!: boolean;
 
-    @Mutation('updateEntry', { namespace: 'app' })
+    @Mutation('updateEntry', { namespace: 'editor' })
     protected updateEntry!: (value: HostsEntry) => void;
 
-    @Mutation('deleteEntry', { namespace: 'app' })
+    @Mutation('deleteEntry', { namespace: 'editor' })
     protected deleteEntry!: (value: HostsEntry) => void;
 
     protected get category(): HostsCategory | null {

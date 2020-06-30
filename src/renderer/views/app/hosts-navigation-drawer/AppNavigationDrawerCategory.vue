@@ -67,10 +67,10 @@
     }
   })
   export default class AppNavigationDrawerCategory extends Vue {
-    @State('selectedId', { namespace: 'app' })
+    @State('selectedId', { namespace: 'editor' })
     protected readonly selectedId!: string | null;
 
-    @State('hosts', { namespace: 'app' })
+    @State('hosts', { namespace: 'editor' })
     protected readonly hosts!: Hosts;
 
     @Prop({ type: Boolean })
@@ -79,13 +79,13 @@
     @Prop({ type: Object, default: true })
     protected readonly category!: HostsCategory;
 
-    @Mutation('viewCategory', { namespace: 'app' })
+    @Mutation('viewCategory', { namespace: 'editor' })
     protected viewCategory!: (id: string) => void;
 
-    @Mutation('addEntry', { namespace: 'app' })
+    @Mutation('addEntry', { namespace: 'editor' })
     protected addEntry!: (category: HostsCategory) => void;
 
-    @Mutation('addCategory', { namespace: 'app' })
+    @Mutation('addCategory', { namespace: 'editor' })
     protected addCategory!: () => void;
 
     protected onClick(): void {
