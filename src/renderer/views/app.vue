@@ -82,7 +82,7 @@
       color="blue"
       app
     >
-      <span class="white--text">v{{ version }}</span>
+      <span class="white--text">v{{version}}</span>
       <span class="white--text ml-4">&copy; 2020 Charlie Broad</span>
     </v-footer>
   </v-app>
