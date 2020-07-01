@@ -15,7 +15,9 @@ import App from '@renderer/views/app.vue';
 import { store } from './store'
 
 Vue.use(vuetifyPlugin);
-Vue.use(VuetifyToast);
+// TODO: Keep reviewing this. Specify the framework explicitly to get around a bug in VuetifyToast.
+// https://github.com/eolant/vuetify-toast-snackbar/issues/42
+Vue.use(VuetifyToast, { $vuetify: vuetify.framework });
 
 new Vue({
   vuetify,

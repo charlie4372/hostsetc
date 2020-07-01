@@ -1,14 +1,19 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import AppModule from './modules/AppModule';
+import EditorModule from './modules/editor/EditorModule';
 
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
-  state: {},
+  getters: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    canApplicationExit(_state: any, getters: any): boolean {
+      return getters['editor/canApplicationExit'];
+    }
+  },
   modules: {
-    app: AppModule
+    editor: EditorModule
   }
 });
 

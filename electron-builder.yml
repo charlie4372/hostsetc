@@ -1,4 +1,4 @@
-appId: 'com.hostsetc'
+appId: 'com.hostsetc.app'
 productName: 'Hosts Etc'
 
 win:
@@ -6,7 +6,7 @@ win:
   requestedExecutionLevel: highestAvailable
 
 nsis:
-  license: license.txt
+  license: LICENSE
   createDesktopShortcut: false
   shortcutName: 'Hosts Etc'
 

@@ -15,7 +15,7 @@ module.exports = function(config) {
   config.resolve.alias['vue$'] = path.resolve(__dirname, 'node_modules/vue/dist/vue.runtime.common.dev.js');
 
   // externals
-  config.externals.push('vue'); // vuetify and vue bundled with webpack dons't like each others.
+  config.externals.push('vue'); // vuetify and vue bundled with webpack don't like each other.
 
   //stats
   config.stats = config.stats || {};
