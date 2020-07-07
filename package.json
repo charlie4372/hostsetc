@@ -41,7 +41,7 @@
     "@vue/test-utils": "^1.0.3",
     "babel-jest": "^26.0.1",
     "deepmerge": "^4.2.2",
-    "electron": "8.2.0",
+    "electron": "8.2.4",
     "electron-builder": "^22.7.0",
     "electron-webpack": "^2.8.2",
     "electron-webpack-ts": "^4.0.1",
