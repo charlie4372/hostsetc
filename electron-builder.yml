@@ -4,6 +4,7 @@ productName: 'Hosts Etc'
 win:
   target: nsis
   requestedExecutionLevel: highestAvailable
+  icon: src/icon/icon.ico
 
 nsis:
   artifactName: hosts-etc-setup.${version}.${ext}
