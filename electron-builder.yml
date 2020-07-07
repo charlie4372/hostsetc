@@ -6,6 +6,7 @@ win:
   requestedExecutionLevel: highestAvailable
 
 nsis:
+  artifactName: hosts-etc-setup.${version}.${ext}
   license: LICENSE
   createDesktopShortcut: false
   shortcutName: 'Hosts Etc'

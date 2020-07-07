@@ -6,22 +6,9 @@ export default class AppUpdater {
     const log = require("electron-log")
     log.transports.file.level = "debug"
     autoUpdater.logger = log
-    autoUpdater.checkForUpdatesAndNotify()
-
-    autoUpdater.on('checking-for-update', () => {
-      debugger;
-    });
-
-    autoUpdater.on('update-available', () => {
-      debugger;
-    });
-
-    autoUpdater.on('update-not-available', () => {
-      debugger;
-    });
   }
 
-  public checkForUpdates(): Promise<UpdateCheckResult | null> {
+  public checkForUpdatesAndNotify(): Promise<UpdateCheckResult | null> {
     return autoUpdater.checkForUpdatesAndNotify();
   }
 }

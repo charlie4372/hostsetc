@@ -18,12 +18,12 @@ function createMainWindow() {
 
   if (isDevelopment) {
     window.webContents.openDevTools()
-  } else {
-    // Needed to use dev tools while running in escalated mode (Windows 10)
-    // https://github.com/electron/electron/issues/20069
-    const devtools = new BrowserWindow()
-    window.webContents.setDevToolsWebContents(devtools.webContents)
-    window.webContents.openDevTools({ mode: 'detach' })
+  // } else {
+  //   // Needed to use dev tools while running in escalated mode (Windows 10)
+  //   // https://github.com/electron/electron/issues/20069
+  //   const devtools = new BrowserWindow()
+  //   window.webContents.setDevToolsWebContents(devtools.webContents)
+  //   window.webContents.openDevTools({ mode: 'detach' })
   }
 
   if (isDevelopment) {
@@ -88,9 +88,9 @@ app.on('activate', () => {
 })
 
 // create main BrowserWindow when electron is ready
-app.on('ready', () => {
+app.on('ready', async () => {
   mainWindow = createMainWindow()
 
   const updater = new AppUpdater();
-  setTimeout(() => updater.checkForUpdatesAndNotify, 10000);
+  await updater.checkForUpdatesAndNotify();
 })
