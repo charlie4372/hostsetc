@@ -1,6 +1,6 @@
 {
   "name": "hosts-etc",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "GPL-3.0-only",
   "author": "Charlie Broad",
   "repository": "https://github.com/charlie4372/hostsetc",
@@ -9,7 +9,7 @@
     "compile": "electron-webpack",
     "dist": "yarn compile && electron-builder",
     "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null",
-    "test": "jest"
+    "tests": "jest"
   },
   "dependencies": {
     "@mdi/font": "^5.3.45",
