@@ -11,10 +11,13 @@ import {
   getEntryFromHosts,
   Hosts,
   HostsCategory,
-  HostsEntry
+  HostsEntry,
+  isHostsCategory,
+  isHostsEntry
 } from "@common/hosts";
 import {HostsFile} from "@common/hosts-file/HostsFile";
 import HostsSerialiser from "@common/hosts-serialiser";
+import log from "electron-log";
 
 /*
 The serialiser.
@@ -44,6 +47,35 @@ Sets the current view to a given category.
 function viewCategory(module: EditorModule, id: string): void {
   module.view = 'category'
   module.selectedId = id;
+}
+
+/*
+Formats a value for logging.
+ */
+function formatForLog(value: HostsEntry | HostsCategory | HostsFile | null): string {
+  if (value === null) {
+   return '[null]';
+  }
+
+  if (isHostsCategory(value) || isHostsEntry(value)) {
+    return `[${value.id}] ${value.name}`;
+  }
+
+  return value.path;
+}
+
+/*
+Dumps the value to the log.
+ */
+function dumpToLog(value: Hosts): void {
+  log.info('Dumping hosts.');
+  for (const category of value.categories) {
+    log.info(` Category: ${formatForLog(category)}`);
+
+    for (const entry of category.entries) {
+      log.info(`  Entry: ${formatForLog(entry)}`);
+    }
+  }
 }
 
 /*
@@ -94,20 +126,17 @@ export default class EditorModule extends VuexModule {
   }
 
   /*
-  Sets the selectedId.
-   */
-  @Mutation
-  public setSelectedId(id: string | null): void {
-    this.selectedId = id;
-  }
-
-  /*
   Sets the hosts.
    */
   @Mutation
   public setHosts(value: Hosts): void {
+    log.debug(`Settings hosts...`);
+
     this.hosts = value;
     this.hostsFileContent = hostsSerialiser.serialise(value);
+
+    dumpToLog(value);
+    log.info(`Set hosts.`);
   }
 
   /*
@@ -115,7 +144,11 @@ export default class EditorModule extends VuexModule {
    */
   @Mutation
   public viewEntry(id: string): void {
+    log.debug(`Viewing entry [${id}]...`);
+
     viewEntry(this, id);
+
+    log.info(`Viewing entry [${id}].`);
   }
 
   /*
@@ -123,8 +156,12 @@ export default class EditorModule extends VuexModule {
    */
   @Mutation
   public viewCategory(id: string): void {
+    log.debug(`Viewing category [${id}]...`);
+
     this.view = 'category'
     this.selectedId = id;
+
+    log.info(`Viewing category [${id}].`);
   }
 
   /*
@@ -132,11 +169,15 @@ export default class EditorModule extends VuexModule {
    */
   @Mutation
   public viewFile(): void {
+    log.debug('Viewing hosts file...');
+
     this.view = 'file';
     this.selectedId = null;
 
     // The hostsFileContent may be out of date, update it.
     this.hostsFileContent = hostsSerialiser.serialise(this.hosts);
+
+    log.info('Viewing hosts file.');
   }
 
   /*
@@ -145,8 +186,11 @@ export default class EditorModule extends VuexModule {
    */
   @Mutation
   public updateEntry(value: HostsEntry): void {
+    log.debug(`Updating entry ${formatForLog(value)}...`);
+
     const currentEntry = getEntryFromHosts(this.hosts, value.id);
     if (currentEntry === null) {
+      log.error(`Entry ${formatForLog(value)} not found.`);
       throw new Error('Entry not found.');
     }
 
@@ -154,6 +198,8 @@ export default class EditorModule extends VuexModule {
     currentEntry.name = value.name;
     currentEntry.active = value.active;
     currentEntry.content = value.content;
+
+    log.info(`Updated entry ${formatForLog(value)}.`);
 
     updateHostsFileContentIfBeingViewed(this);
   }
@@ -164,16 +210,21 @@ export default class EditorModule extends VuexModule {
    */
   @Mutation
   public deleteEntry(value: HostsEntry): void {
+    log.debug(`Deleting entry ${formatForLog(value)}...`);
+
     const category = getCategoryWithEntryFromHosts(this.hosts, value.id);
     if (category === null) {
-      throw new Error('Entry not found.')
+      log.error(`Category containing entry ${formatForLog(value)} not found.`);
+      throw new Error('Category containing entry not found.')
     } else if (category.entries.length === 1) {
+      log.error(`Entry ${formatForLog(value)} cannot be deleted.`);
       throw new Error('Entry cannot be deleted.')
     }
 
     const index = category.entries.findIndex((entry): boolean => entry.id === value.id);
     // More for typescript happiness than anything else.
     if (index === -1) {
+      log.error(`Entry ${formatForLog(value)} not found.`);
       throw new Error('Entry not found.');
     }
 
@@ -181,6 +232,8 @@ export default class EditorModule extends VuexModule {
 
     // Update the view to be the entry at the same index, or the last available entry for the category.
     const newIndex = index >= category.entries.length - 1 ? category.entries.length - 1 : index;
+
+    log.info(`Deleted entry ${formatForLog(value)}.`);
 
     viewEntry(this, category.entries[newIndex].id);
   }
@@ -191,13 +244,17 @@ export default class EditorModule extends VuexModule {
    */
   @Mutation
   public addEntry(category: HostsCategory): void {
+    log.debug(`Adding entry to ${formatForLog(category)}...`);
     const currentCategory = getCategoryFromHosts(this.hosts, category.id);
     if (currentCategory === null) {
+      log.error(`Category ${formatForLog(category)} not found.`);
       throw new Error('Category not found.')
     }
 
     const newEntry = createNewEntry();
     currentCategory.entries.push(newEntry);
+
+    log.info(`Add entry to ${formatForLog(category)}.`);
 
     viewEntry(this, newEntry.id);
   }
@@ -208,8 +265,12 @@ export default class EditorModule extends VuexModule {
    */
   @Mutation
   public addCategory(): void {
+    log.debug('Adding category...');
+
     const newCategory = createNewCategory();
     this.hosts.categories.push(newCategory);
+
+    log.info('Added category.');
 
     viewCategory(this, newCategory.id);
   }
@@ -220,12 +281,17 @@ export default class EditorModule extends VuexModule {
    */
   @Mutation
   public updateCategory(value: HostsCategory): void {
+    log.debug(`Updating category ${formatForLog(value)}...`);
+
     const currentCategory = getCategoryFromHosts(this.hosts, value.id);
     if (currentCategory === null) {
+      log.error(`Category ${formatForLog(value)} not found.`);
       throw new Error('Category not found.');
     }
 
     currentCategory.name = value.name;
+
+    log.info(`Updated category ${formatForLog(value)}.`);
 
     updateHostsFileContentIfBeingViewed(this);
   }
@@ -236,12 +302,17 @@ export default class EditorModule extends VuexModule {
    */
   @Mutation
   public deleteCategory(value: HostsCategory): void {
+    log.debug(`Deleting category ${formatForLog(value)}...`);
+
     const index = this.hosts.categories.findIndex((category): boolean => category.id === value.id);
     if (index === -1) {
+      log.error(`Category ${formatForLog(value)} not found.`);
       throw new Error('Category not found.');
     }
 
     this.hosts.categories.splice(index, 1);
+
+    log.info(`Deleted category ${formatForLog(value)}.`);
 
     viewEntry(this, this.hosts.categories[0].entries[0].id)
   }
@@ -252,6 +323,8 @@ export default class EditorModule extends VuexModule {
    */
   @Mutation
   public updateHostsFile(value: string): void {
+    log.debug('Updating hosts file...');
+
     this.hosts = hostsSerialiser.deserialise(value);
     this.hostsFileContent = value;
 
@@ -260,15 +333,25 @@ export default class EditorModule extends VuexModule {
     // If hosts is updated when the view changes, the id of the  drawer item that is clicked on
     // will not be in the newly deserialised hosts.
     this.hosts = hostsSerialiser.deserialise(value);
+
+    dumpToLog(this.hosts);
+    log.info('Updated hosts file.');
   }
 
   @Mutation
   public setHostsFile(hostsFile: HostsFile): void {
+    log.debug(`Setting hosts file ${formatForLog(hostsFile)}...`);
+
     this.hosts = hostsFile.hosts;
     this.hostsFilePath = hostsFile.path;
     this.hostsFileContent =  hostsFile.content;
-    this.view = 'entry';
-    this.selectedId = this.hosts.categories[0].entries[0].id;
+
+    dumpToLog(this.hosts);
+    log.info(`Set hosts file ${formatForLog(hostsFile)}.`);
+
+    viewEntry(this, this.hosts.categories[0].entries[0].id);
+
+    log.info(`Viewing [${this.selectedId}] ${this.hosts.categories[0].entries[0].name}.`);
   }
 
   /*
@@ -279,15 +362,20 @@ export default class EditorModule extends VuexModule {
   // async loadHostsFile(): Promise<{ hosts: Hosts; hostsFilePath: string; hostsFileContent: string; view: AppView; selectedId: string }> {
   @Action
   public async loadHostsFile(): Promise<void> {
+    log.debug(`Loading ${this.hostsFilePath}...`);
+
     const hostsFile = new HostsFile();
     await hostsFile.load(this.hostsFilePath);
 
     // This should never occur.
     if (hostsFile.hosts === null || hostsFile.content === null) {
+      log.error(`Failed to load ${this.hostsFilePath}.`);
       throw new Error('Failed to load the hosts file.')
     }
 
     this.context.commit('setHostsFile', hostsFile);
+
+    log.info(`Loaded ${this.hostsFilePath}.`);
   }
 
   /*
@@ -295,6 +383,8 @@ export default class EditorModule extends VuexModule {
    */
   @Action
   public async saveHostsFile(): Promise<void> {
+    log.debug(`Saving ${this.hostsFilePath}...`);
+
     this.context.commit('setIsSaving', true);
 
     try {
@@ -306,6 +396,8 @@ export default class EditorModule extends VuexModule {
     } finally {
       this.context.commit('setIsSaving', false);
     }
+
+    log.info(`Saved ${this.hostsFilePath}.`);
   }
 
   /*

@@ -4,7 +4,7 @@
     class="text-editor-input"
     :value="value"
     :options="codeMirrorOptions"
-    @input="$emit('input', $event)"
+    @input="onCodeMirrorInput($event)"
   />
 </template>
 
@@ -32,6 +32,15 @@
       mode: 'hosts-file',
       lineNumbers: true,
       scrollbarStyle: 'simple'
+    }
+
+    protected onCodeMirrorInput(value: string): void {
+      // Absorb input events that don't add any value.
+      if (this.value === value) {
+        return;
+      }
+
+      this.$emit('input', value);
     }
   }
 </script>

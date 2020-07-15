@@ -5,6 +5,7 @@ import * as path from 'path'
 import { format as formatUrl } from 'url'
 import {Messages} from "../common/messages";
 import AppUpdater from './AppUpdater';
+import log from 'electron-log';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -13,12 +14,17 @@ let mainWindow
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function createMainWindow() {
+  log.info('Creating main window...');
+
   const window = new BrowserWindow({webPreferences: {nodeIntegration: true}});
   let closing = false;
 
   if (isDevelopment) {
+    log.info('Development build');
+    log.info('Opening dev tools...');
     window.webContents.openDevTools()
   // } else {
+  //   log.info('Opening dev tools...');
   //   // Needed to use dev tools while running in escalated mode (Windows 10)
   //   // https://github.com/electron/electron/issues/20069
   //   const devtools = new BrowserWindow()
@@ -38,6 +44,7 @@ function createMainWindow() {
   }
 
   window.on('closed', () => {
+    log.info('Main window closed.');
     mainWindow = null
   })
 
@@ -52,9 +59,11 @@ function createMainWindow() {
     // Send the renderer a request to prompt the user to confirm quitting.
     // When closing is true, (set below) then  we want to exit.
     if (closing) {
+      log.info('Closing main window...');
       return;
     }
 
+    log.info('Closing main window, confirming with user...');
     window.webContents.send(Messages.promptQuit);
     // This prevents the window from closing.
     e.preventDefault();
@@ -63,6 +72,8 @@ function createMainWindow() {
   // When we hear the quit message, close the app.
   ipcMain.on(Messages.quit, (event) => {
     if (event.sender === window.webContents) {
+      log.debug('Quit message received.');
+
       // Setting closing to true tells the on('close') to let the app close.
       closing = true;
       window.close();
@@ -76,6 +87,7 @@ function createMainWindow() {
 app.on('window-all-closed', () => {
   // on macOS it is common for applications to stay open until the user explicitly quits
   if (process.platform !== 'darwin') {
+    log.info('Exiting application.');
     app.quit()
   }
 })
@@ -89,6 +101,8 @@ app.on('activate', () => {
 
 // create main BrowserWindow when electron is ready
 app.on('ready', async () => {
+  log.info('Application ready.');
+
   mainWindow = createMainWindow()
 
   const updater = new AppUpdater();
