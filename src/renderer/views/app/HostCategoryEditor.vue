@@ -12,7 +12,7 @@
       <div class="align-self-end mt-4">
         <confirm-button
           button-text="Delete"
-          content="Are you sure you want to delete this category?"
+          content="Are you sure you want to delete this category and all of its contents?"
           :button-disabled="!canDelete"
           @click="onDelete"
         />
