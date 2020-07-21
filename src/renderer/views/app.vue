@@ -8,7 +8,7 @@
       <v-toolbar-title>Host Etc</v-toolbar-title>
     </v-app-bar>
 
-    <v-content
+    <v-main
       class="app__content"
     >
       <div class="d-flex h-100">
@@ -76,12 +76,12 @@
           </v-dialog>
         </v-container>
       </div>
-    </v-content>
+    </v-main>
     <v-footer
       color="blue"
       app
     >
-      <span class="white--text">v{{version}}</span>
+      <span class="white--text">v{{ version }}</span>
       <span class="white--text ml-4">&copy; 2020 Charlie Broad</span>
     </v-footer>
   </v-app>
